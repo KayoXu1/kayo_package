@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  intl: ^0.18.1 #  Dec 7, 2023
+  intl: ">=0.18.0  <=10.0.0" #^0.18.1 #  Dec 7, 2023
   fluro: ">=1.6.1  <=10.0.0"      #  Mar 1, 2021  2.0.3
 #  connectivity: ">=0.4.8+2 <=10.0.0"   # May 26, 2021  3.0.6
   connectivity_plus: ^5.0.2
