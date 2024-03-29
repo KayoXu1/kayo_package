@@ -101,6 +101,11 @@ class LoadingUtils {
       {String? data,
       int timeInSecForIosWeb = 2,
       ToastGravity gravity = ToastGravity.BOTTOM}) {
+    String m = (data ?? '').replaceAll(' ', '').replaceAll('\n', '');
+    if (BaseSysUtils.empty(m)) {
+      return;
+    }
+
     // EasyLoading.showToast(data ?? '');
     if (PlatformUtils.isMacOS ||
         PlatformUtils.isWindows ||
