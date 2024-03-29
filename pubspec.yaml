@@ -31,6 +31,7 @@ dependencies:
   json_annotation: ">=3.0.1 <=10.0.0"     # Jul 13, 2021   4.1.0
   provider: ">=4.0.0 <=10.0.0"            # Jul 12, 2021  5.0.0 / 6.0.0-dev
   fluttertoast: ">=3.1.2 <=20.0.0"        # May 19, 2021   8.0.7
+  bot_toast: ">=3.1.2 <=20.0.0"        # May 19, 2021   8.0.7
   extended_image: ^8.2.0
   convex_bottom_bar: ^3.2.0
   lpinyin: ^2.0.3

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -31,16 +32,33 @@ class LoadingUtils {
   Color? toastBgColor;
   Color? toastTextColor;
 
-  static TransitionBuilder? init({TransitionBuilder? builder,
-    Color? toastBgColor,
-    Color? toastTextColor}) {
+  static TransitionBuilder? init(
+      {TransitionBuilder? builder,
+      Color? toastBgColor,
+      Color? toastTextColor}) {
     share.toastBgColor = toastBgColor;
     share.toastTextColor = toastTextColor;
-
+    final botToastBuilder = BotToastInit();
     return (BuildContext context, Widget? child) {
+      BotToast.defaultOption.notification.animationDuration =
+          const Duration(seconds: 1);
+
       if (builder != null) {
+        if (PlatformUtils.isLinux ||
+            PlatformUtils.isWindows ||
+            PlatformUtils.isMacOS) {
+          return botToastBuilder(
+              context, builder(context, FlutterEasyLoading(child: child)));
+        }
+
         return builder(context, FlutterEasyLoading(child: child));
       } else {
+        if (PlatformUtils.isLinux ||
+            PlatformUtils.isWindows ||
+            PlatformUtils.isMacOS) {
+          return botToastBuilder(context, FlutterEasyLoading(child: child));
+        }
+
         return FlutterEasyLoading(child: child);
       }
     };
@@ -79,13 +97,18 @@ class LoadingUtils {
     EasyLoading.showInfo(data ?? '', duration: Duration(seconds: seconds ?? 2));
   }
 
-  static showToast({String? data,
-    int timeInSecForIosWeb = 2,
-    ToastGravity gravity = ToastGravity.BOTTOM}) {
+  static showToast(
+      {String? data,
+      int timeInSecForIosWeb = 2,
+      ToastGravity gravity = ToastGravity.BOTTOM}) {
     // EasyLoading.showToast(data ?? '');
-    if (PlatformUtils.isMacOS || PlatformUtils.isWindows ||
+    if (PlatformUtils.isMacOS ||
+        PlatformUtils.isWindows ||
         PlatformUtils.isLinux) {
-      LoadingUtils.showError(data: data, seconds: timeInSecForIosWeb);
+      BotToast.showText(
+          text: data ?? '',
+          duration: Duration(
+              seconds: timeInSecForIosWeb > 1 ? timeInSecForIosWeb : 1));
     } else {
       Fluttertoast.showToast(
         msg: data ?? '',
@@ -93,7 +116,7 @@ class LoadingUtils {
         backgroundColor: share.toastBgColor,
         textColor: share.toastTextColor,
         toastLength:
-        timeInSecForIosWeb > 1 ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT,
+            timeInSecForIosWeb > 1 ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT,
         timeInSecForIosWeb: timeInSecForIosWeb,
       );
     }

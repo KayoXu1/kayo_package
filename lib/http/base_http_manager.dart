@@ -104,6 +104,9 @@ abstract class BaseHttpManager {
         CancelToken? cancelToken,
         ProgressCallback? onSendProgress,
         ProgressCallback? onReceiveProgress}) async {
+    if (!url.contains('http')) {
+      return;
+    }
     if (autoShowDialog) LoadingUtils.show(data: textLoading());
 
     var paramsTemp = Map<String, dynamic>.from(params ?? {});
