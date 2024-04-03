@@ -25,7 +25,38 @@ abstract class BaseViewModelList<T> extends BaseViewModel {
 
   RefreshController get refreshController => _refreshController;
 
-  int get pageSize => 20;
+  int getPageSize() {
+    return 20;
+  }
+
+  int get pageSize => getPageSize();
+
+  loadDataWithPageIndex(int pageIndex,
+      {ValueChanged<List<T>>? onSuccess,
+      ValueChanged<List<T>>? onCache,
+      ValueChanged<String>? onError}) {
+    _currentPageNum = pageIndex;
+    loadData(
+        pageIndex: pageIndex,
+        onSuccess: (data) {
+          _setData(data);
+          if (null != onSuccess) {
+            onSuccess(data);
+          }
+        },
+        onCache: (data) {
+          if (null != onCache) {
+            _setData(data);
+            onCache(data);
+          }
+        },
+        onError: (data) {
+          refreshController.loadFailed();
+          if (null != onError) {
+            onError(data);
+          }
+        });
+  }
 
   // 下拉刷新
   refresh(
