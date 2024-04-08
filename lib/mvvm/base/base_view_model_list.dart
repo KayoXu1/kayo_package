@@ -29,6 +29,10 @@ abstract class BaseViewModelList<T> extends BaseViewModel {
     return 20;
   }
 
+  int getPageIndex() {
+    return _currentPageNum;
+  }
+
   int get pageSize => getPageSize();
 
   loadDataWithPageIndex(int pageIndex,
