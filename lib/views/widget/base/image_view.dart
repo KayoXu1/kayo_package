@@ -55,6 +55,7 @@ class ImageView extends StatefulWidget {
   final Color? imagePaddingColor;
   final double? imagePaddingRadius;
   final String? defaultImage;
+  final bool? srcToFile;
 
   ImageView({
     Key? key,
@@ -83,6 +84,7 @@ class ImageView extends StatefulWidget {
     this.aspectRatio = -1,
     this.useCache = false,
     this.imageProvider,
+    this.srcToFile,
   }) : super(key: key);
 
   @override
@@ -146,13 +148,21 @@ class ImageViewState extends State<ImageView> {
 //      } else
 
         {
-          image = Image.asset(
-            widget.src ?? '',
-            color: widget.color,
-            width: widget.width,
-            height: widget.height,
-            fit: widget.fit,
-          );
+          if (widget.srcToFile == true) {
+            image = Image.file(File(widget.src ?? ''),
+                color: widget.color,
+                width: widget.width,
+                height: widget.height,
+                fit: widget.fit);
+          }else{
+            image = Image.asset(
+              widget.src ?? '',
+              color: widget.color,
+              width: widget.width,
+              height: widget.height,
+              fit: widget.fit,
+            );
+          }
         }
       } else if (null != widget.file) {
         image = Image.file(widget.file!,
