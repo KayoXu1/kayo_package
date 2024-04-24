@@ -35,7 +35,11 @@ extension ColorExtension on Color? {
         .withOpacity(KayoPackage.share.isDark() ? opacity : 1);
   }
 
-  Color? toDark({bool? textDarkOnlyOpacity}) {
+  Color? toDark({bool? textDarkOnlyOpacity, bool userDark = false}) {
+    if (KayoPackage.share.enableDark != true) {
+      return this;
+    }
+
     if (null == this) {
       return this;
     }
@@ -51,7 +55,7 @@ extension ColorExtension on Color? {
 
     opacity = 0.89;
 
-    if (KayoPackage.share.navigatorKey.currentContext.isDark) {
+    if (userDark || KayoPackage.share.navigatorKey.currentContext.isDark) {
       if (textDarkOnlyOpacity == true) {
         return this!.withOpacity(opacity);
       }

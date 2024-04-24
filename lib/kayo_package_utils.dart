@@ -31,6 +31,7 @@ class KayoPackage {
   Locale? locale = Locale('zh');
   String? imageSourcePrefix = '';
   int reLoginCode = 401;
+  bool enableDark = false;
   Function(BuildContext context)? onTapToolbarBack;
   Function(BuildContext context, String page, Map<String, dynamic>? resultArgs,
       dynamic resultData)? onNotifyPop;
@@ -42,8 +43,7 @@ class KayoPackage {
   ThemeData get theme =>
       Theme.of(KayoPackage.share.navigatorKey.currentContext!);
 
-  BuildContext get context =>
-      KayoPackage.share.navigatorKey.currentContext!;
+  BuildContext get context => KayoPackage.share.navigatorKey.currentContext!;
 
   init({
     String? nullText,
@@ -54,6 +54,7 @@ class KayoPackage {
     String? dataPickerLocale,
     Locale? locale,
     bool? ignoreSSL,
+    bool? enableDark,
     int? reLoginCode,
     Color? colorPrimary,
     Color? colorPrimaryLight,
@@ -78,6 +79,7 @@ class KayoPackage {
     BaseColorUtils.colorAccentLiteLite =
         colorPrimary ?? BaseColorUtils.colorAccentLiteLite;
     this.reLoginCode = reLoginCode ?? this.reLoginCode;
+    this.enableDark = enableDark ?? this.enableDark;
 
     this.imageSourcePrefix = imageSourcePrefix ?? this.imageSourcePrefix ?? '';
     this.ignoreSSL = ignoreSSL ?? this.ignoreSSL ?? false;

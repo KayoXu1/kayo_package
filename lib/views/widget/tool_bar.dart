@@ -132,7 +132,7 @@ class ToolBarState extends State<ToolBar> {
                             iconSize: 22,
                             color: Color(widget.darkStatusText == true
                                 ? 0xff50525c
-                                : 0xffffffff),
+                                : 0xffffffff).darkNull,
                             onPressed: widget.backClick ??
                                 (null != KayoPackage.share.onTapToolbarBack
                                     ? () {
@@ -153,21 +153,21 @@ class ToolBarState extends State<ToolBar> {
                     ? Brightness.light
                     : Brightness.dark),
             centerTitle: widget.centerTitle ?? true,
-            backgroundColor: null != widget.appbarColor
+            backgroundColor: (null != widget.appbarColor
                 ? widget.appbarColor
-                : BaseColorUtils.colorWindowWhite,
+                : BaseColorUtils.colorWindowWhite).darkNull,
             iconTheme: IconThemeData(
-                color: widget.darkStatusText == true
+                color:( widget.darkStatusText == true
                     ? BaseColorUtils.colorBlack
-                    : BaseColorUtils.white),
+                    : BaseColorUtils.white).darkNull),
             title: (null == widget.titelWidget && null == widget.titleWidget)
                 ? Text(
                     widget.title ?? '',
                     style: TextStyle(
                         fontSize: widget.titleSize,
-                        color: widget.darkStatusText == true
+                        color: (widget.darkStatusText == true
                             ? BaseColorUtils.colorBlack
-                            : BaseColorUtils.white),
+                            : BaseColorUtils.white).darkNull),
                     textAlign: TextAlign.center,
                   )
                 : (widget.titelWidget ?? widget.titleWidget),
@@ -184,15 +184,15 @@ class ToolBarState extends State<ToolBar> {
       key: widget.key,
       // resizeToAvoidBottomPadding: widget.resizeToAvoidBottomPadding,
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomPadding,
-      backgroundColor: null != widget.backgroundColor
+      backgroundColor: (null != widget.backgroundColor
           ? widget.backgroundColor
-          : BaseColorUtils.colorWindow,
+          : BaseColorUtils.colorWindow).darkNull,
       drawer: widget.drawer,
       drawerDragStartBehavior:
           widget.drawerDragStartBehavior ?? DragStartBehavior.start,
       drawerEdgeDragWidth: widget.drawerEdgeDragWidth,
       drawerEnableOpenDragGesture: widget.drawerEnableOpenDragGesture ?? true,
-      drawerScrimColor: widget.drawerScrimColor,
+      drawerScrimColor: widget.drawerScrimColor.darkNull,
       endDrawer: widget.endDrawer,
       endDrawerEnableOpenDragGesture:
           widget.endDrawerEnableOpenDragGesture ?? true,
@@ -211,10 +211,10 @@ class ToolBarState extends State<ToolBar> {
                           ? BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  widget.toolbarStartBgColor ??
-                                      widget.toolbarEndBgColor!,
-                                  widget.toolbarEndBgColor ??
-                                      widget.toolbarStartBgColor!
+                                 ( widget.toolbarStartBgColor ??
+                                      widget.toolbarEndBgColor!).dark,
+                                  (widget.toolbarEndBgColor ??
+                                      widget.toolbarStartBgColor!).dark
                                 ],
                                 begin: widget.toolbarStartBgColorAlignment ??
                                     Alignment.centerLeft,
