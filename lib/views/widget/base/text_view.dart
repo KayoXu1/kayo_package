@@ -36,8 +36,10 @@ class TextView extends StatelessWidget {
       this.rightIconMargin = const EdgeInsets.only(left: 3),
       this.onTap,
       this.overflow,
+      this.mainAxisAlignment = MainAxisAlignment.start,
       this.rightIconColor});
 
+  final MainAxisAlignment mainAxisAlignment;
   final Color color;
   final Color? borderColor;
   final String? text;
@@ -91,6 +93,7 @@ class TextView extends StatelessWidget {
     var v = null == left
         ? tv
         : Row(
+            mainAxisAlignment: mainAxisAlignment,
             mainAxisSize: mainAxisSize ?? MainAxisSize.max,
             children: <Widget>[left!, tv],
           );
@@ -98,6 +101,7 @@ class TextView extends StatelessWidget {
     var child2 = null == rightIcon
         ? v
         : Row(
+            mainAxisAlignment: mainAxisAlignment,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               v,
