@@ -85,7 +85,7 @@ class TextView extends StatelessWidget {
       softWrap: true,
       textAlign: textAlign,
       style: TextStyle(
-        color: color.toDark(textDarkOnlyOpacity: textDarkOnlyOpacity),
+        color: color.toDark(darkTransColor: darkTransColor,textDarkOnlyOpacity: textDarkOnlyOpacity),
         fontSize: size,
         fontFamily: fontFamily,
         fontWeight: fontWeight,
@@ -135,7 +135,7 @@ class TextView extends StatelessWidget {
             height: height,
             decoration: ((null != bgColor || true == border)
                 ? BoxDecoration(
-                    color: bgColor.toDark(darkTransColor: darkTransColor),
+                    color: bgColor.toDark(darkTransColor: darkTransColor,textDarkOnlyOpacity: textDarkOnlyOpacity),
                     borderRadius: borderRadius ?? BorderRadius.circular(radius),
                     border: border != true
                         ? null

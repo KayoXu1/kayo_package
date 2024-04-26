@@ -35,8 +35,9 @@ extension ColorExtension on Color? {
         .withOpacity(KayoPackage.share.isDark() ? opacity : 1);
   }
 
-  Color? toDark(
-      {bool? textDarkOnlyOpacity, bool userDark = false, bool? darkTransColor = true}) {
+  Color? toDark({bool? textDarkOnlyOpacity,
+    bool userDark = false,
+    bool? darkTransColor = true}) {
     if (KayoPackage.share.enableDark != true) {
       return this;
     }
@@ -62,7 +63,7 @@ extension ColorExtension on Color? {
 
     if (userDark || KayoPackage.share.navigatorKey.currentContext.isDark) {
       if (textDarkOnlyOpacity == true) {
-        return this!.withOpacity(opacity);
+        return this!.withOpacity(opacity * this!.opacity);
       }
 
       // 提取红色、绿色和蓝色分量
