@@ -119,12 +119,12 @@ class BaseSysUtils {
   /*
   * 电话号码校验
   * */
-  static bool isPhoneNo(String str) {
+  static bool isPhoneNo(String? str) {
     if (BaseSysUtils.empty(str)) return false;
 
     return new RegExp(
             '^((13[0-9])|(14[0-9])|(15[0-9])|(16[0-9])|(17[0-9])|(18[0-9])|(19[0-9]))\\d{8}\$')
-        .hasMatch(str);
+        .hasMatch(str!);
   }
 
   ///是否是中文

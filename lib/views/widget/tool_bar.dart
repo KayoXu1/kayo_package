@@ -59,6 +59,7 @@ class ToolBar extends StatefulWidget {
   final bool? endDrawerEnableOpenDragGesture;
   final DrawerCallback? onDrawerChanged;
   final DrawerCallback? onEndDrawerChanged;
+  final bool? darkNoBg;
 
   ToolBar({
     required this.child,
@@ -103,6 +104,7 @@ class ToolBar extends StatefulWidget {
     this.endDrawerEnableOpenDragGesture,
     this.onDrawerChanged,
     this.onEndDrawerChanged,
+    this.darkNoBg = false,
   }) : super(key: key);
 
   @override
@@ -131,8 +133,9 @@ class ToolBarState extends State<ToolBar> {
                                   ),
                             iconSize: 22,
                             color: Color(widget.darkStatusText == true
-                                ? 0xff50525c
-                                : 0xffffffff).darkNull,
+                                    ? 0xff50525c
+                                    : 0xffffffff)
+                                .darkNull,
                             onPressed: widget.backClick ??
                                 (null != KayoPackage.share.onTapToolbarBack
                                     ? () {
@@ -149,25 +152,39 @@ class ToolBarState extends State<ToolBar> {
                           )
                         : null),
             systemOverlayStyle: SystemUiOverlayStyle(
-                statusBarBrightness: widget.darkStatusText == true || true
-                    ? Brightness.light
-                    : Brightness.dark),
+              systemNavigationBarIconBrightness:
+                  widget.darkStatusText == true && !context.isDark
+                      ? Brightness.dark
+                      : Brightness.light,
+              statusBarIconBrightness:
+                  widget.darkStatusText == true && !context.isDark
+                      ? Brightness.dark
+                      : Brightness.light,
+              statusBarBrightness:
+                  widget.darkStatusText == true && !context.isDark
+                      ? Brightness.dark
+                      : Brightness.light,
+            ),
             centerTitle: widget.centerTitle ?? true,
-            backgroundColor: (null != widget.appbarColor
-                ? widget.appbarColor
-                : BaseColorUtils.colorWindowWhite).darkNull,
+            backgroundColor: (null != widget.appbarColor &&
+                (widget.darkNoBg != true || !context.isDark)
+                    ? widget.appbarColor
+                    : BaseColorUtils.colorWindowWhite)
+                .darkNull,
             iconTheme: IconThemeData(
-                color:( widget.darkStatusText == true
-                    ? BaseColorUtils.colorBlack
-                    : BaseColorUtils.white).darkNull),
+                color: (widget.darkStatusText == true
+                        ? BaseColorUtils.colorBlack
+                        : BaseColorUtils.white)
+                    .darkNull),
             title: (null == widget.titelWidget && null == widget.titleWidget)
                 ? Text(
                     widget.title ?? '',
                     style: TextStyle(
                         fontSize: widget.titleSize,
                         color: (widget.darkStatusText == true
-                            ? BaseColorUtils.colorBlack
-                            : BaseColorUtils.white).darkNull),
+                                ? BaseColorUtils.colorBlack
+                                : BaseColorUtils.white)
+                            .darkNull),
                     textAlign: TextAlign.center,
                   )
                 : (widget.titelWidget ?? widget.titleWidget),
@@ -184,9 +201,11 @@ class ToolBarState extends State<ToolBar> {
       key: widget.key,
       // resizeToAvoidBottomPadding: widget.resizeToAvoidBottomPadding,
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomPadding,
-      backgroundColor: (null != widget.backgroundColor
-          ? widget.backgroundColor
-          : BaseColorUtils.colorWindow).darkNull,
+      backgroundColor: (null != widget.backgroundColor &&
+                  (widget.darkNoBg != true || !context.isDark)
+              ? widget.backgroundColor
+              : BaseColorUtils.colorWindow)
+          .darkNull,
       drawer: widget.drawer,
       drawerDragStartBehavior:
           widget.drawerDragStartBehavior ?? DragStartBehavior.start,
@@ -211,10 +230,12 @@ class ToolBarState extends State<ToolBar> {
                           ? BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                 ( widget.toolbarStartBgColor ??
-                                      widget.toolbarEndBgColor!).dark,
+                                  (widget.toolbarStartBgColor ??
+                                          widget.toolbarEndBgColor!)
+                                      .dark,
                                   (widget.toolbarEndBgColor ??
-                                      widget.toolbarStartBgColor!).dark
+                                          widget.toolbarStartBgColor!)
+                                      .dark
                                 ],
                                 begin: widget.toolbarStartBgColorAlignment ??
                                     Alignment.centerLeft,

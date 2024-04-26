@@ -27,16 +27,17 @@ extension BaseWidgetExtension on Widget? {
 
   ///给widget增加点击事件
   @Deprecated('调用')
-  Widget setOnClick({Key? key,
-    required GestureTapCallback? onTap,
-    double? radius,
-    bool? materialBtn = true,
-    EdgeInsets? margin,
-    EdgeInsets? padding,
-    double? elevation,
-    Color? bgColor,
-    Color? shadowColor,
-    Alignment? alignment}) {
+  Widget setOnClick(
+      {Key? key,
+      required GestureTapCallback? onTap,
+      double? radius,
+      bool? materialBtn = true,
+      EdgeInsets? margin,
+      EdgeInsets? padding,
+      double? elevation,
+      Color? bgColor,
+      Color? shadowColor,
+      Alignment? alignment}) {
     if (null != this) {
       return Clickable(
         key: key,
@@ -124,10 +125,11 @@ extension BaseWidgetExtension on Widget? {
   }
 
   ///设置Align
-  Widget setAlign({Key? key,
-    required AlignmentGeometry alignment,
-    double? widthFactor,
-    double? heightFactor}) {
+  Widget setAlign(
+      {Key? key,
+      required AlignmentGeometry alignment,
+      double? widthFactor,
+      double? heightFactor}) {
     if (null != this) {
       return Align(
         key: key,
@@ -141,35 +143,36 @@ extension BaseWidgetExtension on Widget? {
   }
 
   ///外面包一层container
-  Widget addContainer({Key? key,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    Alignment? alignment,
-    Color? color,
-    double? height,
-    double? width,
-    bool? enable = true,
-    Decoration? decoration}) {
+  Widget addContainer(
+      {Key? key,
+      EdgeInsets? padding,
+      EdgeInsets? margin,
+      Alignment? alignment,
+      Color? color,
+      double? height,
+      double? width,
+      bool? enable = true,
+      Decoration? decoration}) {
     if (enable != true) {
       return this!;
     }
     if (null != this) {
       return null != padding ||
-          null != margin ||
-          null != alignment ||
-          null != color ||
-          null != decoration
+              null != margin ||
+              null != alignment ||
+              null != color ||
+              null != decoration
           ? Container(
-        key: key,
-        height: height,
-        width: width,
-        padding: padding,
-        margin: margin,
-        alignment: alignment,
-        child: this,
-        color: null == decoration ? color : null,
-        decoration: decoration,
-      )
+              key: key,
+              height: height,
+              width: width,
+              padding: padding,
+              margin: margin,
+              alignment: alignment,
+              child: this,
+              color: null == decoration ? color : null,
+              decoration: decoration,
+            )
           : this!;
     }
     return SizedBox();
@@ -197,13 +200,14 @@ extension BaseWidgetExtension on Widget? {
   }
 
   ///外面包一层SafeArea
-  Widget addSafeArea({Key? key,
-    bool? left,
-    bool? top,
-    bool? right,
-    bool? bottom,
-    EdgeInsets? minimum,
-    bool? maintainBottomViewPadding}) {
+  Widget addSafeArea(
+      {Key? key,
+      bool? left,
+      bool? top,
+      bool? right,
+      bool? bottom,
+      EdgeInsets? minimum,
+      bool? maintainBottomViewPadding}) {
     if (null != this) {
       return SafeArea(
           key: key,
@@ -255,10 +259,10 @@ extension BaseWidgetExtension on Widget? {
       return absorbing != true
           ? this!
           : AbsorbPointer(
-          key: key,
-          absorbing: absorbing!,
-          child: this,
-          ignoringSemantics: ignoringSemantics);
+              key: key,
+              absorbing: absorbing!,
+              child: this,
+              ignoringSemantics: ignoringSemantics);
     }
     return SizedBox();
   }
@@ -271,11 +275,35 @@ extension BaseWidgetExtension on Widget? {
       return ignoring != true
           ? this!
           : IgnorePointer(
-          key: key,
-          ignoring: ignoring!,
-          child: this,
-          ignoringSemantics: ignoringSemantics);
+              key: key,
+              ignoring: ignoring!,
+              child: this,
+              ignoringSemantics: ignoringSemantics);
     }
     return SizedBox();
+  }
+
+  ///设置Align
+  Widget addBgImg(
+      {Key? key,
+      String? src,
+      BoxFit fit = BoxFit.fitWidth,
+      double width = double.infinity}) {
+    if (null == this) {
+      return Container();
+    }
+    if (!BaseSysUtils.empty(src)) {
+      return Stack(
+        children: [
+          ImageView(
+            src: src,
+            fit: fit,
+            width: width,
+          ).dark(),
+          this!
+        ],
+      );
+    }
+    return this!;
   }
 }

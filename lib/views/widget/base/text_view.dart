@@ -37,8 +37,12 @@ class TextView extends StatelessWidget {
       this.onTap,
       this.overflow,
       this.rightIconColor,
-      this.textDarkOnlyOpacity});
+      this.textDarkOnlyOpacity,
+      this.mainAxisAlignment = MainAxisAlignment.start,
+      this.darkTransColor = true});
 
+  final MainAxisAlignment mainAxisAlignment;
+  final bool? darkTransColor;
   final bool? textDarkOnlyOpacity;
   final Color? color;
   final Color? borderColor;
@@ -94,12 +98,14 @@ class TextView extends StatelessWidget {
         ? tv
         : Row(
             mainAxisSize: mainAxisSize ?? MainAxisSize.max,
+            mainAxisAlignment: mainAxisAlignment,
             children: <Widget>[left!, tv],
           );
 
     var child2 = null == rightIcon
         ? v
         : Row(
+            mainAxisAlignment: mainAxisAlignment,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               v,
@@ -129,7 +135,7 @@ class TextView extends StatelessWidget {
             height: height,
             decoration: ((null != bgColor || true == border)
                 ? BoxDecoration(
-                    color: bgColor.dark,
+                    color: bgColor.toDark(darkTransColor: darkTransColor),
                     borderRadius: borderRadius ?? BorderRadius.circular(radius),
                     border: border != true
                         ? null

@@ -14,9 +14,9 @@ extension ColorExtension on Color? {
 
   MaterialStateProperty<Color?>? materialStatePropertyFuc() {
     return MaterialStateProperty.resolveWith<Color?>(
-        (Set<MaterialState> states) {
-      return this;
-    });
+            (Set<MaterialState> states) {
+          return this;
+        });
   }
 
   ///深色模式颜色调暗
@@ -35,8 +35,13 @@ extension ColorExtension on Color? {
         .withOpacity(KayoPackage.share.isDark() ? opacity : 1);
   }
 
-  Color? toDark({bool? textDarkOnlyOpacity, bool userDark = false}) {
+  Color? toDark(
+      {bool? textDarkOnlyOpacity, bool userDark = false, bool? darkTransColor = true}) {
     if (KayoPackage.share.enableDark != true) {
+      return this;
+    }
+
+    if (darkTransColor != true) {
       return this;
     }
 
