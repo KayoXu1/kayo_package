@@ -116,182 +116,183 @@ class ToolBarState extends State<ToolBar> {
   Widget build(BuildContext context) {
     PreferredSizeWidget toolbar = null == widget.appBar
         ? AppBar(
-            actions: widget.actions,
-            elevation: widget.elevation,
-            titleSpacing:
-                widget.titleSpacing ?? NavigationToolbar.kMiddleSpacing,
-            leading: widget.noBack == true
-                ? Container()
-                : widget.leading != null
-                    ? widget.leading
-                    : (widget.iosBack == true || null != widget.leadingIcon
-                        ? IconButton(
-                            icon: null != widget.leadingIcon
-                                ? widget.leadingIcon!
-                                : Icon(
-                                    Icons.arrow_back_ios,
-                                  ),
-                            iconSize: 22,
-                            color: Color(widget.darkStatusText == true
-                                    ? 0xff50525c
-                                    : 0xffffffff)
-                                .darkNull,
-                            onPressed: widget.backClick ??
-                                (null != KayoPackage.share.onTapToolbarBack
-                                    ? () {
-                                        KayoPackage.share.onTapToolbarBack
-                                            ?.call(context);
-                                      }
-                                    : () async {
-                                        if (Navigator.canPop(context)) {
-                                          return Navigator.of(context).pop();
-                                        } else {
-                                          return await SystemNavigator.pop();
-                                        }
-                                      }), // null disables the button
-                          )
-                        : null),
-            systemOverlayStyle: SystemUiOverlayStyle(
-              systemNavigationBarIconBrightness:
-                  widget.darkStatusText == true && !context.isDark
-                      ? Brightness.dark
-                      : Brightness.light,
-              statusBarIconBrightness:
-                  widget.darkStatusText == true && !context.isDark
-                      ? Brightness.dark
-                      : Brightness.light,
-              statusBarBrightness:
-                  widget.darkStatusText == true && !context.isDark
-                      ? Brightness.dark
-                      : Brightness.light,
-            ),
-            centerTitle: widget.centerTitle ?? true,
-            backgroundColor: (null != widget.appbarColor &&
-                (widget.darkNoBg != true || !context.isDark)
-                    ? widget.appbarColor
-                    : BaseColorUtils.colorWindowWhite)
-                .darkNull,
-            iconTheme: IconThemeData(
-                color: (widget.darkStatusText == true
-                        ? BaseColorUtils.colorBlack
-                        : BaseColorUtils.white)
-                    .darkNull),
-            title: (null == widget.titelWidget && null == widget.titleWidget)
-                ? Text(
-                    widget.title ?? '',
-                    style: TextStyle(
-                        fontSize: widget.titleSize,
-                        color: (widget.darkStatusText == true
-                                ? BaseColorUtils.colorBlack
-                                : BaseColorUtils.white)
-                            .darkNull),
-                    textAlign: TextAlign.center,
-                  )
-                : (widget.titelWidget ?? widget.titleWidget),
-          )
+      actions: widget.actions,
+      elevation: widget.elevation,
+      titleSpacing:
+      widget.titleSpacing ?? NavigationToolbar.kMiddleSpacing,
+      leading: widget.noBack == true
+          ? Container()
+          : widget.leading != null
+          ? widget.leading
+          : (widget.iosBack == true || null != widget.leadingIcon
+          ? IconButton(
+        icon: null != widget.leadingIcon
+            ? widget.leadingIcon!
+            : Icon(
+          Icons.arrow_back_ios,
+        ),
+        iconSize: 22,
+        color: Color(widget.darkStatusText == true
+            ? 0xff50525c
+            : 0xffffffff)
+            .darkNull,
+        onPressed: widget.backClick ??
+            (null != KayoPackage.share.onTapToolbarBack
+                ? () {
+              KayoPackage.share.onTapToolbarBack
+                  ?.call(context);
+            }
+                : () async {
+              if (Navigator.canPop(context)) {
+                return Navigator.of(context).pop();
+              } else {
+                return await SystemNavigator.pop();
+              }
+            }), // null disables the button
+      )
+          : null),
+      systemOverlayStyle: SystemUiOverlayStyle(
+        systemNavigationBarIconBrightness:
+        widget.darkStatusText == true && !context.isDark
+            ? Brightness.dark
+            : Brightness.light,
+        statusBarIconBrightness:
+        widget.darkStatusText == true && !context.isDark
+            ? Brightness.dark
+            : Brightness.light,
+        statusBarBrightness:
+        widget.darkStatusText == true && !context.isDark
+            ? Brightness.dark
+            : Brightness.light,
+      ),
+      centerTitle: widget.centerTitle ?? true,
+      backgroundColor: (null != widget.appbarColor &&
+          (widget.darkNoBg != true || !context.isDark)
+          ? widget.appbarColor
+          : BaseColorUtils.colorWindowWhite)
+          .darkNull,
+      iconTheme: IconThemeData(
+          color: (widget.darkStatusText == true
+              ? BaseColorUtils.colorBlack
+              : BaseColorUtils.white)
+              .darkNull),
+      title: (null == widget.titelWidget && null == widget.titleWidget)
+          ? Text(
+        widget.title ?? '',
+        style: TextStyle(
+            fontSize: widget.titleSize,
+            fontWeight: FontWeight.w500,
+            color: (widget.darkStatusText == true
+                ? BaseColorUtils.colorBlack
+                : BaseColorUtils.white)
+                .darkNull),
+        textAlign: TextAlign.center,
+      )
+          : (widget.titelWidget ?? widget.titleWidget),
+    )
         : widget.appBar!;
 
     var body2 = null == widget.marginToolbarTop
         ? widget.child
         : Container(
-            margin: EdgeInsets.only(top: widget.marginToolbarTop ?? 0),
-            child: widget.child,
-          );
+      margin: EdgeInsets.only(top: widget.marginToolbarTop ?? 0),
+      child: widget.child,
+    );
     var scaffold = Scaffold(
       key: widget.key,
       // resizeToAvoidBottomPadding: widget.resizeToAvoidBottomPadding,
       resizeToAvoidBottomInset: widget.resizeToAvoidBottomPadding,
       backgroundColor: (null != widget.backgroundColor &&
-                  (widget.darkNoBg != true || !context.isDark)
-              ? widget.backgroundColor
-              : BaseColorUtils.colorWindow)
+          (widget.darkNoBg != true || !context.isDark)
+          ? widget.backgroundColor
+          : BaseColorUtils.colorWindow)
           .darkNull,
       drawer: widget.drawer,
       drawerDragStartBehavior:
-          widget.drawerDragStartBehavior ?? DragStartBehavior.start,
+      widget.drawerDragStartBehavior ?? DragStartBehavior.start,
       drawerEdgeDragWidth: widget.drawerEdgeDragWidth,
       drawerEnableOpenDragGesture: widget.drawerEnableOpenDragGesture ?? true,
       drawerScrimColor: widget.drawerScrimColor.darkNull,
       endDrawer: widget.endDrawer,
       endDrawerEnableOpenDragGesture:
-          widget.endDrawerEnableOpenDragGesture ?? true,
+      widget.endDrawerEnableOpenDragGesture ?? true,
       onDrawerChanged: widget.onDrawerChanged,
       onEndDrawerChanged: widget.onEndDrawerChanged,
       appBar: -1 == widget.toolbarHeight
           ? toolbar
           : PreferredSize(
-              child: (null == widget.toolbarSrc &&
-                      (null == widget.toolbarStartBgColor &&
-                          null == widget.toolbarEndBgColor))
-                  ? toolbar
-                  : Container(
-                      decoration: (null != widget.toolbarStartBgColor ||
-                              null != widget.toolbarEndBgColor)
-                          ? BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  (widget.toolbarStartBgColor ??
-                                          widget.toolbarEndBgColor!)
-                                      .dark,
-                                  (widget.toolbarEndBgColor ??
-                                          widget.toolbarStartBgColor!)
-                                      .dark
-                                ],
-                                begin: widget.toolbarStartBgColorAlignment ??
-                                    Alignment.centerLeft,
-                                end: widget.toolbarEndBgColorAlignment ??
-                                    Alignment.centerRight,
-                              ),
-//                              borderRadius: BorderRadius.circular(widget.radius)
-                            )
-                          : BoxDecoration(
-                              image: DecorationImage(
-                                  image: AssetImage(
-                                      source(widget.toolbarSrc ?? '')),
-                                  fit: BoxFit.fill)),
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: null == widget.toolbarSubView
-                          ? toolbar
-                          : Column(
-                              children: widget.noAppBar == true
-                                  ? <Widget>[
-                                      PreferredSize(
-                                        child: SizedBox(
-                                          height: 25,
-                                        ),
-                                        preferredSize: Size.fromHeight(0),
-                                      ),
-                                      Expanded(
-                                        child: widget.toolbarSubView!,
-                                      )
-                                    ]
-                                  : <Widget>[
-                                      toolbar,
-                                      Expanded(
-                                        child: widget.toolbarSubView!,
-                                      )
-                                    ],
-                            ),
-                    ),
-              preferredSize: Size.fromHeight(widget.toolbarHeight ?? 0),
+        child: (null == widget.toolbarSrc &&
+            (null == widget.toolbarStartBgColor &&
+                null == widget.toolbarEndBgColor))
+            ? toolbar
+            : Container(
+          decoration: (null != widget.toolbarStartBgColor ||
+              null != widget.toolbarEndBgColor)
+              ? BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                (widget.toolbarStartBgColor ??
+                    widget.toolbarEndBgColor!)
+                    .dark,
+                (widget.toolbarEndBgColor ??
+                    widget.toolbarStartBgColor!)
+                    .dark
+              ],
+              begin: widget.toolbarStartBgColorAlignment ??
+                  Alignment.centerLeft,
+              end: widget.toolbarEndBgColorAlignment ??
+                  Alignment.centerRight,
             ),
+//                              borderRadius: BorderRadius.circular(widget.radius)
+          )
+              : BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage(
+                      source(widget.toolbarSrc ?? '')),
+                  fit: BoxFit.fill)),
+          width: double.infinity,
+          height: double.infinity,
+          child: null == widget.toolbarSubView
+              ? toolbar
+              : Column(
+            children: widget.noAppBar == true
+                ? <Widget>[
+              PreferredSize(
+                child: SizedBox(
+                  height: 25,
+                ),
+                preferredSize: Size.fromHeight(0),
+              ),
+              Expanded(
+                child: widget.toolbarSubView!,
+              )
+            ]
+                : <Widget>[
+              toolbar,
+              Expanded(
+                child: widget.toolbarSubView!,
+              )
+            ],
+          ),
+        ),
+        preferredSize: Size.fromHeight(widget.toolbarHeight ?? 0),
+      ),
       body: null == widget.dragView
           ? body2
           : Stack(
-              children: [body2!, widget.dragView!],
-            ),
+        children: [body2!, widget.dragView!],
+      ),
       floatingActionButton: widget.floatingActionButton,
       floatingActionButtonLocation: widget.floatingActionButtonLocation,
     );
     return widget.noBack != true && null == widget.onWillPop
         ? scaffold
         : WillPopScope(
-            child: scaffold,
-            onWillPop: widget.noBack == true && widget.onWillPop == null
-                ? () async {
-                    return false;
-                  }
-                : widget.onWillPop);
+        child: scaffold,
+        onWillPop: widget.noBack == true && widget.onWillPop == null
+            ? () async {
+          return false;
+        }
+            : widget.onWillPop);
   }
 }
