@@ -5,11 +5,10 @@ import '../kayo_package_utils.dart';
 import 'base_build_context_extension.dart';
 
 extension ImageViewExtension on ImageView? {
-  Widget dark() {
-    if (KayoPackage.share.navigatorKey.currentContext.isDark){
+  Widget dark({bool darkNoBg = true}) {
+    if (KayoPackage.share.navigatorKey.currentContext.isDark && darkNoBg) {
       return Container();
     }
     return this!;
   }
-
 }

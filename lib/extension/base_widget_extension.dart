@@ -288,18 +288,33 @@ extension BaseWidgetExtension on Widget? {
       {Key? key,
       String? src,
       BoxFit fit = BoxFit.fitWidth,
+      bool wrapContainer = true,
+      bool darkNoBg = true,
       double width = double.infinity}) {
     if (null == this) {
       return Container();
     }
     if (!BaseSysUtils.empty(src)) {
+      if (wrapContainer) {
+        return Container(
+          child: this,
+          decoration: KayoPackage.share.isDark() && darkNoBg
+              ? null
+              : BoxDecoration(
+                  image: DecorationImage(
+                  image: AssetImage(src!),
+                  fit: fit,
+                )),
+        );
+      }
+
       return Stack(
         children: [
           ImageView(
             src: src,
             fit: fit,
             width: width,
-          ).dark(),
+          ).dark(darkNoBg:darkNoBg),
           this!
         ],
       );
