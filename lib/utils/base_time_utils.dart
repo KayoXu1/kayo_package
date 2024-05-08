@@ -214,7 +214,7 @@ class BaseTimeUtils {
   * DateTime转时间戳
   *
   * */
-  static String dateToTimeStr(DateTime dateTime, {String? format}) {
+  static String dateToTimeStr(DateTime? dateTime, {String? format}) {
     format = format ?? formatDefault;
     if (null == dateTime) return '';
 

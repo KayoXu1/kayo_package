@@ -454,7 +454,7 @@ class BaseSysUtils {
       });
     };
   }
-//  static SystemNavigatorPop() async {
-//    return await SystemNavigator.pop();
-//  }
+ static String cnSpace(int size) {
+    return '\u3000' * size; // 中文空格的Unicode编码是'\u3000'
+  }
 }

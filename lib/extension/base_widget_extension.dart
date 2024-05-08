@@ -287,7 +287,7 @@ extension BaseWidgetExtension on Widget? {
   Widget addBgImg(
       {Key? key,
       String? src,
-      BoxFit fit = BoxFit.fitWidth,
+      BoxFit fit = BoxFit.fitHeight,
       bool wrapContainer = true,
       bool darkNoBg = true,
       double width = double.infinity}) {
