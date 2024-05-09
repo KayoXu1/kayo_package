@@ -287,7 +287,8 @@ extension BaseWidgetExtension on Widget? {
   Widget addBgImg(
       {Key? key,
       String? src,
-      BoxFit fit = BoxFit.fitHeight,
+      BoxFit fit = BoxFit.fill,
+      Color color = BaseColorUtils.colorWhite,
       bool wrapContainer = true,
       bool darkNoBg = true,
       double width = double.infinity}) {
@@ -298,13 +299,14 @@ extension BaseWidgetExtension on Widget? {
       if (wrapContainer) {
         return Container(
           child: this,
-          decoration: KayoPackage.share.isDark() && darkNoBg
-              ? null
-              : BoxDecoration(
-                  image: DecorationImage(
-                  image: AssetImage(src!),
-                  fit: fit,
-                )),
+          decoration: BoxDecoration(
+              color: color.dark,
+              image: KayoPackage.share.isDark() && darkNoBg
+                  ? null
+                  : DecorationImage(
+                      image: AssetImage(src!),
+                      fit: fit,
+                    )),
         );
       }
 
@@ -314,7 +316,7 @@ extension BaseWidgetExtension on Widget? {
             src: src,
             fit: fit,
             width: width,
-          ).dark(darkNoBg:darkNoBg),
+          ).dark(darkNoBg: darkNoBg),
           this!
         ],
       );
