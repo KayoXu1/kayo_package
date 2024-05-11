@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:kayo_package/kayo_package.dart';
 
 extension BaseListExtension on List? {
-  bool get isList => null != this || !(this is List);
+  bool get isList => null != this || (this is List);
 
   List get dealNotList => isList == true ? this! : [];
 
