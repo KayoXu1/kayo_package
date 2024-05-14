@@ -15,7 +15,7 @@ import 'gps_utils.dart';
 ///
 class MapUtils {
   static void showMapNavi(
-      BuildContext context, double latitude, double longitude,
+      BuildContext? context, double latitude, double longitude,
       {String title = '目的地'}) async {
     List<Widget> list = [];
 
@@ -42,7 +42,7 @@ class MapUtils {
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
-            Navigator.of(context).pop();
+            Navigator.of(context!).pop();
             // launchUrl(appleMapUrl);
             MapLauncher.showDirections(
                 mapType: MapType.apple,
@@ -61,7 +61,7 @@ class MapUtils {
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
-            Navigator.of(context).pop();
+            Navigator.of(context!).pop();
             // launchUrl(googleMapUrl);
             MapLauncher.showDirections(
                 mapType: MapType.google,
@@ -80,7 +80,7 @@ class MapUtils {
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
-            Navigator.of(context).pop();
+            Navigator.of(context!).pop();
             // launchUrl(baiduMapUrl);
             MapLauncher.showDirections(
                 mapType: MapType.baidu,
@@ -99,7 +99,7 @@ class MapUtils {
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
-            Navigator.of(context).pop();
+            Navigator.of(context!).pop();
             // launchUrl(aMapUrl);
             MapLauncher.showDirections(
                 mapType: MapType.amap,
@@ -118,7 +118,7 @@ class MapUtils {
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
-            Navigator.of(context).pop();
+            Navigator.of(context!).pop();
             // launchUrl(tencentMapUrl);
             MapLauncher.showDirections(
                 mapType: MapType.tencent,
