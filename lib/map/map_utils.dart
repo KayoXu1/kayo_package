@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kayo_package/kayo_package.dart';
+import 'package:map_launcher/map_launcher.dart';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -14,7 +15,8 @@ import 'gps_utils.dart';
 ///
 class MapUtils {
   static void showMapNavi(
-      BuildContext context, double latitude, double longitude) async {
+      BuildContext context, double latitude, double longitude,
+      {String title = '目的地'}) async {
     List<Widget> list = [];
 
     ///苹果地图url
@@ -33,70 +35,95 @@ class MapUtils {
     var tencentMapUrl = _tencentMapUrl(latitude, longitude);
 
     ///如果有苹果地图则加入
-    if (await canLaunchUrl(appleMapUrl) == true && Platform.isIOS) {
+    if (await canLaunchUrl(appleMapUrl) == true && Platform.isIOS ||
+        await MapLauncher.isMapAvailable(MapType.apple) == true) {
       var a = AlertSheet.sheetAction(
           text: _appMapTitle(),
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
             Navigator.of(context).pop();
-            launchUrl(appleMapUrl);
+            // launchUrl(appleMapUrl);
+            MapLauncher.showDirections(
+                mapType: MapType.apple,
+                destination: Coords(latitude, longitude),
+                destinationTitle: title);
           });
 
       list.add(a);
     }
 
     ///如果有谷歌地图则加入
-    if (await canLaunchUrl(googleMapUrl) == true) {
+    if (await canLaunchUrl(googleMapUrl) == true ||
+        await MapLauncher.isMapAvailable(MapType.google) == true) {
       var a = AlertSheet.sheetAction(
           text: _googleMapTitle(),
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
             Navigator.of(context).pop();
-            launchUrl(googleMapUrl);
+            // launchUrl(googleMapUrl);
+            MapLauncher.showDirections(
+                mapType: MapType.google,
+                destination: Coords(latitude, longitude),
+                destinationTitle: title);
           });
 
       list.add(a);
     }
 
     ///如果有百度地图则加入
-    if (await canLaunchUrl(baiduMapUrl) == true) {
+    if (await canLaunchUrl(baiduMapUrl) == true ||
+        await MapLauncher.isMapAvailable(MapType.baidu) == true) {
       var a = AlertSheet.sheetAction(
           text: _baimapTitle(),
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
             Navigator.of(context).pop();
-            launchUrl(baiduMapUrl);
+            // launchUrl(baiduMapUrl);
+            MapLauncher.showDirections(
+                mapType: MapType.baidu,
+                destination: Coords(latitude, longitude),
+                destinationTitle: title);
           });
 
       list.add(a);
     }
 
     ///如果有高德地图则加入
-    if (await canLaunchUrl(aMapUrl) == true) {
+    if (await canLaunchUrl(aMapUrl) == true ||
+        await MapLauncher.isMapAvailable(MapType.amap) == true) {
       var a = AlertSheet.sheetAction(
           text: _amapTitle(),
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
             Navigator.of(context).pop();
-            launchUrl(aMapUrl);
+            // launchUrl(aMapUrl);
+            MapLauncher.showDirections(
+                mapType: MapType.amap,
+                destination: Coords(latitude, longitude),
+                destinationTitle: title);
           });
 
       list.add(a);
     }
 
     ///如果有腾讯地图则加入
-    if (await canLaunchUrl(tencentMapUrl) == true) {
+    if (await canLaunchUrl(tencentMapUrl) == true ||
+        await MapLauncher.isMapAvailable(MapType.tencent) == true) {
       var a = AlertSheet.sheetAction(
           text: _qqmapTitle(),
           color: BaseColorUtils.colorAccent,
           showLine: true,
           callback: () async {
             Navigator.of(context).pop();
-            launchUrl(tencentMapUrl);
+            // launchUrl(tencentMapUrl);
+            MapLauncher.showDirections(
+                mapType: MapType.tencent,
+                destination: Coords(latitude, longitude),
+                destinationTitle: title);
           });
 
       list.add(a);
