@@ -154,16 +154,16 @@ class ToolBarState extends State<ToolBar> {
       systemOverlayStyle: SystemUiOverlayStyle(
         systemNavigationBarIconBrightness:
         widget.darkStatusText == true && !context.isDark
-            ? Brightness.dark
-            : Brightness.light,
+            ? (PlatformUtils.isAndroid ? Brightness.dark : Brightness.light)
+            : (PlatformUtils.isAndroid ? Brightness.light : Brightness.dark),
         statusBarIconBrightness:
         widget.darkStatusText == true && !context.isDark
-            ? Brightness.dark
-            : Brightness.light,
+            ? (PlatformUtils.isAndroid ? Brightness.dark : Brightness.light)
+            : (PlatformUtils.isAndroid ? Brightness.light : Brightness.dark),
         statusBarBrightness:
         widget.darkStatusText == true && !context.isDark
-            ? Brightness.dark
-            : Brightness.light,
+            ? (PlatformUtils.isAndroid ? Brightness.dark : Brightness.light)
+            : (PlatformUtils.isAndroid ? Brightness.light : Brightness.dark),
       ),
       centerTitle: widget.centerTitle ?? true,
       backgroundColor: (null != widget.appbarColor &&
@@ -181,7 +181,7 @@ class ToolBarState extends State<ToolBar> {
         widget.title ?? '',
         style: TextStyle(
             fontSize: widget.titleSize,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.bold,
             color: (widget.darkStatusText == true
                 ? BaseColorUtils.colorBlack
                 : BaseColorUtils.white)
