@@ -29,6 +29,7 @@ source(String src, {String suffix = '.png'}) {
 class ImageView extends StatefulWidget {
   final String? src;
   final String? url;
+  final String? heroTag;
   final bool? useCache;
   final File? file;
   final double? width;
@@ -46,6 +47,7 @@ class ImageView extends StatefulWidget {
 
   final VoidCallback? onClick;
   final VoidCallback? onLongClick;
+  final ValueChanged<String?>? onClickHero;
 
   final double? elevation;
   final Color? shadowColor;
@@ -85,6 +87,8 @@ class ImageView extends StatefulWidget {
     this.useCache = false,
     this.imageProvider,
     this.srcToFile,
+    this.onClickHero,
+    this.heroTag,
   }) : super(key: key);
 
   @override
@@ -99,6 +103,18 @@ class ImageViewState extends State<ImageView> {
 //  BoxDecoration BoxShape.circle
 
   bool isDown = false;
+
+  String? get heroTag {
+    if (null != widget.onClickHero) {
+      return widget.heroTag ??
+          widget.url ??
+          widget.src ??
+          widget.file?.path ??
+          '${BaseSysUtils.randomColor().value}';
+    } else {
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +170,7 @@ class ImageViewState extends State<ImageView> {
                 width: widget.width,
                 height: widget.height,
                 fit: widget.fit);
-          }else{
+          } else {
             image = Image.asset(
               widget.src ?? '',
               color: widget.color,
@@ -219,9 +235,17 @@ class ImageViewState extends State<ImageView> {
             : Clickable(
                 margin: widget.margin,
                 padding: widget.padding,
-                child: container2,
+                child:
+                    null != widget.onClickHero && !BaseSysUtils.empty(heroTag)
+                        ? Hero(tag: heroTag!, child: container2)
+                        : container2,
                 radius: widget.radius,
-                onTap: widget.onClick,
+                onTap: null != widget.onClick || null != widget.onClickHero
+                    ? () {
+                        widget.onClick?.call();
+                        widget.onClickHero?.call(heroTag);
+                      }
+                    : null,
                 onLongPress: widget.onLongClick,
                 bgColor: Colors.transparent,
                 elevation: widget.elevation,
@@ -248,7 +272,9 @@ class ImageViewState extends State<ImageView> {
                 },
               ))
         .addIgnorePointer(
-            ignoring: null == widget.onClick && null == widget.onLongClick);
+            ignoring: null == widget.onClick &&
+                null == widget.onLongClick &&
+                null == widget.onClickHero);
   }
 }
 
