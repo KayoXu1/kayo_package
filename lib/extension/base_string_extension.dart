@@ -30,6 +30,12 @@ extension BaseStringExtension on String? {
     var data = '${this ?? '0'}$unit';
     if (data.endsWith('.0$unit')) {
       data = data.replaceAll('.0$unit', '$unit');
+    } else if (data.endsWith('.00$unit')) {
+      data = data.replaceAll('.00$unit', '$unit');
+    } else if (data.endsWith('.000$unit')) {
+      data = data.replaceAll('.000$unit', '$unit');
+    } else if (data.endsWith('.0000$unit')) {
+      data = data.replaceAll('.0000$unit', '$unit');
     }
     return data;
   }
@@ -49,7 +55,7 @@ extension BaseStringExtension on String? {
           }
           c = c.replaceAll('#', '');
           return Color(
-                  int.parse(c.substring(0, c.length), radix: 16) + 0xFF000000)
+              int.parse(c.substring(0, c.length), radix: 16) + 0xFF000000)
               .withOpacity(opacity);
         } else if (this!.length == 6 &&
             int.tryParse(this!.substring(0, 6), radix: 16) != null) {
