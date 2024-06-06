@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -27,6 +28,7 @@ source(String src, {String suffix = '.png'}) {
 
 @immutable
 class ImageView extends StatefulWidget {
+  final String? base64Data;
   final String? src;
   final String? url;
   final String? heroTag;
@@ -62,6 +64,7 @@ class ImageView extends StatefulWidget {
   ImageView({
     Key? key,
     this.src,
+    this.base64Data,
     this.url,
     this.file,
     this.width,
@@ -119,7 +122,13 @@ class ImageViewState extends State<ImageView> {
   @override
   Widget build(BuildContext context) {
     var image;
-    if (null != widget.imageProvider) {
+    if (null != widget.base64Data) {
+      image = Image.memory(base64.decode(widget.base64Data!),
+          height: widget.height,
+          width: widget.width,
+          fit: widget.fit,
+          gaplessPlayback: true);
+    } else if (null != widget.imageProvider) {
       image = Image(
           image: widget.imageProvider!,
           width: widget.width,
