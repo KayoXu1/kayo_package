@@ -128,7 +128,7 @@ class TitleMsgViewDark extends StatelessWidget {
     return TextViewDark(
       title ?? '',
       maxLine: titleMaxLines ?? 1,
-      textStyle: textStyleTitle ?? context.theme.textTheme.bodyText2,
+      textStyle: textStyleTitle ?? context.theme.textTheme.bodyMedium,
       margin: EdgeInsets.only(right: 0),
     );
   }
@@ -138,7 +138,7 @@ class TitleMsgViewDark extends StatelessWidget {
       msg ?? '',
       textAlign: TextAlign.right,
       maxLine: msgMaxLines ?? 1,
-      textStyle: textStyleMsg ?? context.theme.textTheme.subtitle1,
+      textStyle: textStyleMsg ?? context.theme.textTheme.bodySmall,
     );
   }
 }
