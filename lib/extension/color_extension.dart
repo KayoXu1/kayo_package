@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kayo_package/kayo_package.dart';
@@ -5,6 +7,13 @@ import '../kayo_package_utils.dart';
 import 'base_build_context_extension.dart';
 
 extension ColorExtension on Color? {
+  String toColorHex() {
+    if (null != this) {
+      return '#${this!.value.toRadixString(16).toUpperCase()}';
+    }
+    return '##FF333333';
+  }
+
   Color darkFuc({BuildContext? context, double opacity = 0.65}) {
     return (this ?? Colors.grey).withOpacity(
         (context ?? KayoPackage.share.navigatorKey.currentContext).isDark
@@ -14,9 +23,9 @@ extension ColorExtension on Color? {
 
   MaterialStateProperty<Color?>? materialStatePropertyFuc() {
     return MaterialStateProperty.resolveWith<Color?>(
-            (Set<MaterialState> states) {
-          return this;
-        });
+        (Set<MaterialState> states) {
+      return this;
+    });
   }
 
   ///深色模式颜色调暗
@@ -35,9 +44,10 @@ extension ColorExtension on Color? {
         .withOpacity(KayoPackage.share.isDark() ? opacity : 1);
   }
 
-  Color? toDark({bool? textDarkOnlyOpacity,
-    bool userDark = false,
-    bool? darkTransColor = true}) {
+  Color? toDark(
+      {bool? textDarkOnlyOpacity,
+      bool userDark = false,
+      bool? darkTransColor = true}) {
     if (KayoPackage.share.enableDark != true) {
       return this;
     }
