@@ -11,7 +11,7 @@ extension ColorExtension on Color? {
     if (null != this) {
       return '#${this!.value.toRadixString(16).toUpperCase()}';
     }
-    return '##FF333333';
+    return '#FF333333';
   }
 
   Color darkFuc({BuildContext? context, double opacity = 0.65}) {
