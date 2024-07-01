@@ -1,17 +1,13 @@
-import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kayo_package/kayo_package.dart';
-import '../kayo_package_utils.dart';
-import 'base_build_context_extension.dart';
 
 extension ColorExtension on Color? {
-  String toColorHex() {
+  String toColorHex({Color defaultColor = BaseColorUtils.colorBlack}) {
     if (null != this) {
       return '#${this!.value.toRadixString(16).toUpperCase()}';
     }
-    return '#FF333333';
+    return defaultColor.toColorHex();
   }
 
   Color darkFuc({BuildContext? context, double opacity = 0.65}) {
