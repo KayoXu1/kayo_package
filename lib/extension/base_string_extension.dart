@@ -26,6 +26,22 @@ extension BaseStringExtension on String? {
     }
   }
 
+  String addN({int length = 4}) {
+    if (this == null || this?.isEmpty == true) {
+      return "";
+    }
+
+    StringBuffer buffer = StringBuffer();
+    for (int i = 0; i < this!.length; i++) {
+      buffer.write(this![i]);
+      if ((i + 1) % length == 0 && i != this!.length - 1) {
+        buffer.write('\n');
+      }
+    }
+
+    return buffer.toString();
+  }
+
   String fixDouble({String unit = ''}) {
     var data = '${this ?? '0'}$unit';
     if (data.endsWith('.0$unit')) {
@@ -55,7 +71,7 @@ extension BaseStringExtension on String? {
           }
           c = c.replaceAll('#', '');
           return Color(
-              int.parse(c.substring(0, c.length), radix: 16) + 0xFF000000)
+                  int.parse(c.substring(0, c.length), radix: 16) + 0xFF000000)
               .withOpacity(opacity);
         } else if (this!.length == 6 &&
             int.tryParse(this!.substring(0, 6), radix: 16) != null) {
