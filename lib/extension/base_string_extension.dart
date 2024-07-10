@@ -32,10 +32,19 @@ extension BaseStringExtension on String? {
     }
 
     StringBuffer buffer = StringBuffer();
+    int count = 0;
+
     for (int i = 0; i < this!.length; i++) {
       buffer.write(this![i]);
-      if ((i + 1) % length == 0 && i != this!.length - 1) {
+      count++;
+
+      bool isCurrentDigit = this![i].contains(RegExp(r'\d'));
+      bool isNextDigit =
+          (i + 1 < this!.length) && this![i + 1].contains(RegExp(r'\d'));
+
+      if (count == length && !(isCurrentDigit && isNextDigit)) {
         buffer.write('\n');
+        count = 0;
       }
     }
 
