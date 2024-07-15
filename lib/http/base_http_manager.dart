@@ -310,7 +310,8 @@ abstract class BaseHttpManager {
     }
 
     ///超时
-    // option.connectTimeout = 1000 * 60;
+    option.sendTimeout = Duration(seconds: 20);
+    option.receiveTimeout = Duration(seconds: 60);
 
     Response? response;
     var errorHeader = '';
