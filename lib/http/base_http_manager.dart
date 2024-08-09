@@ -70,17 +70,17 @@ abstract class BaseHttpManager {
   ///获取基础的Header
   Future<Map<String, dynamic>> getBaseHeader();
 
-  _httpPost(String url, Map<String, dynamic>? params,
-      Map<String, dynamic>? header,
+  _httpPost(
+      String url, Map<String, dynamic>? params, Map<String, dynamic>? header,
       {bool autoShowDialog = true,
-        bool autoHideDialog = true,
-        String? method,
-        String? contentType,
-        ValueChanged<BaseResultData>? onSuccess,
-        ValueChanged<String>? onError,
-        CancelToken? cancelToken,
-        ProgressCallback? onSendProgress,
-        ProgressCallback? onReceiveProgress}) async {
+      bool autoHideDialog = true,
+      String? method,
+      String? contentType,
+      ValueChanged<BaseResultData>? onSuccess,
+      ValueChanged<String>? onError,
+      CancelToken? cancelToken,
+      ProgressCallback? onSendProgress,
+      ProgressCallback? onReceiveProgress}) async {
     return netFetch(
         url, params, header, Options(method: method ?? 'POST'), contentType,
         autoHideDialog: autoHideDialog,
@@ -93,17 +93,17 @@ abstract class BaseHttpManager {
   ///  不牵涉分页的时候不用传loadMore，传入loadMore需要传入 page，limit
   doHttpPost<T>(String url, Map? params,
       {Map<String, dynamic>? header,
-        bool autoShowDialog = true,
-        bool autoHideDialog = true,
-        ValueChanged<T?>? onSuccess,
-        ValueChanged<T?>? onCache,
-        ValueChanged<String>? onError,
-        String? method,
-        bool? loadMore,
-        String? subKey,
-        CancelToken? cancelToken,
-        ProgressCallback? onSendProgress,
-        ProgressCallback? onReceiveProgress}) async {
+      bool autoShowDialog = true,
+      bool autoHideDialog = true,
+      ValueChanged<T?>? onSuccess,
+      ValueChanged<T?>? onCache,
+      ValueChanged<String>? onError,
+      String? method,
+      bool? loadMore,
+      String? subKey,
+      CancelToken? cancelToken,
+      ProgressCallback? onSendProgress,
+      ProgressCallback? onReceiveProgress}) async {
     if (!url.contains('http')) {
       return;
     }
@@ -171,7 +171,7 @@ abstract class BaseHttpManager {
       onSendProgress: onSendProgress,
       onSuccess: (resultData) async {
         BaseResultData<T> data =
-        BaseResultData(resultData.msg, resultData.code);
+            BaseResultData(resultData.msg, resultData.code);
 
         if (resultData.code == BaseCode.RESULT_OK) {
           data.data = await getBean<T>(resultData.data);
@@ -180,8 +180,8 @@ abstract class BaseHttpManager {
         String? errorData = '';
 
         if (/*resultData != null &&*/
-        /*resultData.data != null &&*/ resultData.code ==
-            BaseCode.RESULT_OK) {
+            /*resultData.data != null &&*/ resultData.code ==
+                BaseCode.RESULT_OK) {
           if (null != onSuccess) {
             onSuccess(data.data);
           }
@@ -244,13 +244,13 @@ abstract class BaseHttpManager {
   netFetch(String? url, dynamic params, Map<String, dynamic>? header,
       Options? option, String? contentType,
       {bool autoShowDialog = true,
-        bool autoHideDialog = true,
-        String? method,
-        ValueChanged<BaseResultData>? onSuccess,
-        ValueChanged<String>? onError,
-        CancelToken? cancelToken,
-        ProgressCallback? onSendProgress,
-        ProgressCallback? onReceiveProgress}) async {
+      bool autoHideDialog = true,
+      String? method,
+      ValueChanged<BaseResultData>? onSuccess,
+      ValueChanged<String>? onError,
+      CancelToken? cancelToken,
+      ProgressCallback? onSendProgress,
+      ProgressCallback? onReceiveProgress}) async {
     url = '$url'.replaceAll('\n', '');
 
     if (BaseSysUtils.equals((method ?? '').toUpperCase(), 'GET')) {
@@ -310,8 +310,8 @@ abstract class BaseHttpManager {
     }
 
     ///超时
-    // option.sendTimeout = Duration(seconds: 20);
-    // option.receiveTimeout = Duration(seconds: 60);
+    // option.sendTimeout = Duration(seconds: 60 * 5);
+    // option.receiveTimeout = Duration(seconds: 60 * 12);
 
     Response? response;
     var errorHeader = '';
@@ -348,7 +348,8 @@ abstract class BaseHttpManager {
         logInfo(tag: tag, msg: '请求异常请求头: ' + option.headers.toString());
         logInfo(
             tag: tag,
-            msg: '请求异常参数: ' + /* params is Map ? toJson(params) :*/ '$params');
+            msg: '请求异常参数: ' + /* params is Map ? toJson(params) :*/
+                '$params');
 
         logInfo(
             tag: tag,
@@ -362,8 +363,8 @@ abstract class BaseHttpManager {
         return BaseResultData(msg, 6).sendMsg();
       }
 
-      String msg = (BaseSysUtils.isDebug ? errorHeader : '') +
-          (e.message ?? '');
+      String msg =
+          (BaseSysUtils.isDebug ? errorHeader : '') + (e.message ?? '');
       var code = errorResponse?.statusCode ?? BaseCode.RESULT_ERROR_OTHER_ERROR;
       Map<String, dynamic>? map = Map<String, dynamic>();
       try {
@@ -430,9 +431,9 @@ abstract class BaseHttpManager {
       }
 
       if ((jsonMap.containsKey('page') && jsonMap.containsKey('code') ||
-          (params is Map &&
-              params.containsKey('fullData') &&
-              params['fullData'] == true)) &&
+              (params is Map &&
+                  params.containsKey('fullData') &&
+                  params['fullData'] == true)) &&
           BaseCode.RESULT_OK == jsonMap['code']) {
         jsonMap = {'code': 200, 'data': jsonStr};
       }
@@ -456,7 +457,7 @@ abstract class BaseHttpManager {
 
       _onError(onError, message);
       return BaseResultData(
-          message, BaseCode.RESULT_ERROR_NETWORK_JSON_EXCEPTION)
+              message, BaseCode.RESULT_ERROR_NETWORK_JSON_EXCEPTION)
           .sendMsg();
     }
   }
