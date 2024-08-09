@@ -32,16 +32,18 @@ class BaseViewModel with ChangeNotifier {
 
   bool? themeNotifier = false;
 
-  BaseViewModel({ViewState? viewState,
-    BuildContext? context,
-    bool? themeNotifier = false})
+  BaseViewModel(
+      {ViewState? viewState,
+      BuildContext? context,
+      bool? themeNotifier = false})
       : _viewState = (viewState ?? ViewState.idle),
         context = context {
-    debugPrint('BaseViewModel---constructor--->$runtimeType');
     this.themeNotifier = themeNotifier;
-    BaseViewModelBusEvent.handleFunction(
-        viewModel: '$runtimeType',
-        type: BaseViewModelBusEvent.BASE_VIEW_MODEL_PUSH);
+
+    // debugPrint('BaseViewModel---constructor--->$runtimeType');
+    // BaseViewModelBusEvent.handleFunction(
+    //     viewModel: '$runtimeType',
+    //     type: BaseViewModelBusEvent.BASE_VIEW_MODEL_PUSH);
   }
 
   /// ViewState
@@ -49,10 +51,7 @@ class BaseViewModel with ChangeNotifier {
 
   setIsMobileResolution(BuildContext? context) {
     isMobileResolution =
-        (MediaQuery
-            .of(context ?? this.context!)
-            .size
-            .width) < 768;
+        (MediaQuery.of(context ?? this.context!).size.width) < 768;
   }
 
   setBuildContext(BuildContext context) {
@@ -116,6 +115,10 @@ class BaseViewModel with ChangeNotifier {
         this.onThemeChange(event.data);
       });
     }
+
+    BaseViewModelBusEvent.handleFunction(
+        viewModel: '$runtimeType',
+        type: BaseViewModelBusEvent.BASE_VIEW_MODEL_PUSH);
   }
 
   void onThemeChange(dynamic data) {
