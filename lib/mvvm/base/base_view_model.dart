@@ -40,7 +40,7 @@ class BaseViewModel with ChangeNotifier {
         context = context {
     this.themeNotifier = themeNotifier;
 
-    // debugPrint('BaseViewModel---constructor--->$runtimeType');
+    debugPrint('BaseViewModel---constructor--->$runtimeType');
     // BaseViewModelBusEvent.handleFunction(
     //     viewModel: '$runtimeType',
     //     type: BaseViewModelBusEvent.BASE_VIEW_MODEL_PUSH);
