@@ -13,6 +13,7 @@ class TextView extends StatelessWidget {
       {this.color = BaseColorUtils.colorGrey,
       this.borderColor,
       this.fontFamily,
+      this.textScaler,
       this.borderWidth = 1,
       this.size = 14,
       this.height,
@@ -75,17 +76,21 @@ class TextView extends StatelessWidget {
   final Function()? onTap;
   final Color? rightIconColor;
   final TextOverflow? overflow;
+  final TextScaler? textScaler;
 
   @override
   Widget build(BuildContext context) {
     var tv = Text(
       text ?? '',
+      textScaler: textScaler,
       maxLines: maxLine,
       overflow: overflow ?? TextOverflow.ellipsis,
       softWrap: true,
       textAlign: textAlign,
       style: TextStyle(
-        color: color.toDark(darkTransColor: darkTransColor,textDarkOnlyOpacity: textDarkOnlyOpacity),
+        color: color.toDark(
+            darkTransColor: darkTransColor,
+            textDarkOnlyOpacity: textDarkOnlyOpacity),
         fontSize: size,
         fontFamily: fontFamily,
         fontWeight: fontWeight,
@@ -135,7 +140,9 @@ class TextView extends StatelessWidget {
             height: height,
             decoration: ((null != bgColor || true == border)
                 ? BoxDecoration(
-                    color: bgColor.toDark(darkTransColor: darkTransColor,textDarkOnlyOpacity: textDarkOnlyOpacity),
+                    color: bgColor.toDark(
+                        darkTransColor: darkTransColor,
+                        textDarkOnlyOpacity: textDarkOnlyOpacity),
                     borderRadius: borderRadius ?? BorderRadius.circular(radius),
                     border: border != true
                         ? null
