@@ -23,6 +23,7 @@ class BaseCode {
   static const RESULT_ERROR_NO_TYPE = 4;
   static const RESULT_ERROR_TIMESTAMP_ERROR = 5;
   static const RESULT_ERROR_SIGN_ERROR = 6;
+  static const RESULT_ERROR_SIGN_ERROR_401 = 6;
   static const RESULT_ERROR_USER_ERROR = 7;
   static const RESULT_ERROR_AUTH_ERROR = 50;
 

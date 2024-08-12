@@ -30,7 +30,7 @@ class KayoPackage {
   bool? ignoreSSL = false;
   Locale? locale = Locale('zh');
   String? imageSourcePrefix = '';
-  int reLoginCode = 401;
+  int reLoginCode = BaseCode.RESULT_ERROR_SIGN_ERROR_401;
   bool enableDark = false;
   Function(BuildContext context)? onTapToolbarBack;
   Function(BuildContext context, String page, Map<String, dynamic>? resultArgs,

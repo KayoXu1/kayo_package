@@ -360,7 +360,7 @@ abstract class BaseHttpManager {
       if (errorResponse?.statusCode == KayoPackage.share.reLoginCode) {
         var msg = textLoginExpired();
         _onError(onError, msg);
-        return BaseResultData(msg, 6).sendMsg();
+        return BaseResultData(msg, BaseCode.RESULT_ERROR_SIGN_ERROR).sendMsg();
       }
 
       String msg =
