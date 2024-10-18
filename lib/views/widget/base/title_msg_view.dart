@@ -16,6 +16,7 @@ class TitleMsgView extends StatelessWidget {
   final String? title;
   final double? titleSize;
   final Color? titleColor;
+  final Color? bgColor;
   final FontWeight? titleFontWeight;
   final Widget? preTitle;
 
@@ -67,6 +68,7 @@ class TitleMsgView extends StatelessWidget {
     this.margin,
     this.padding,
     this.spacer,
+    this.bgColor,
     this.crossAxisAlignment,
   }) : super(key: key);
 
@@ -92,7 +94,7 @@ class TitleMsgView extends StatelessWidget {
     return Container(
       margin: margin,
       padding: padding,
-      color: BaseColorUtils.white,
+      color: bgColor ?? BaseColorUtils.white,
       child: Row(
         crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
         children: children2,
