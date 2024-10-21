@@ -19,6 +19,7 @@ class TitleMsgView extends StatelessWidget {
   final Color? bgColor;
   final FontWeight? titleFontWeight;
   final Widget? preTitle;
+  final Function()? onTapMsg;
 
   ///left权重
   final int? titleFlex;
@@ -70,6 +71,7 @@ class TitleMsgView extends StatelessWidget {
     this.spacer,
     this.bgColor,
     this.crossAxisAlignment,
+    this.onTapMsg,
   }) : super(key: key);
 
   @override
@@ -84,8 +86,8 @@ class TitleMsgView extends StatelessWidget {
             height: 0,
           ),
       longMsg == true || msgFlex != null
-          ? _buildMsgView().addExpanded(flex: msgFlex ?? 1)
-          : _buildMsgView()
+          ? _buildMsgView(onTap: onTapMsg).addExpanded(flex: msgFlex ?? 1)
+          : _buildMsgView(onTap: onTapMsg)
     ];
 
     if (null != preTitle) children2.insert(0, preTitle!);
@@ -113,12 +115,13 @@ class TitleMsgView extends StatelessWidget {
     );
   }
 
-  TextView _buildMsgView() {
+  TextView _buildMsgView({Function()? onTap}) {
     return TextView(
       msg ?? '',
       fontWeight: msgFontWeight,
       size: msgSize ?? 14,
       textAlign: TextAlign.right,
+      onTap: onTap,
       maxLine: msgMaxLines ?? 1,
       color: msgColor ?? BaseColorUtils.colorBlackLiteLite,
     );
