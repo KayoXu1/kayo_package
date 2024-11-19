@@ -10,9 +10,9 @@ extension BaseDateTimeExtension on DateTime? {
         var seconds = this!.millisecondsSinceEpoch;
         if (tz) {
           if (isUtc) {
-            seconds = seconds + (DateTime.now().timeZoneOffset.inSeconds * 1000);
+            seconds = seconds - (DateTime.now().timeZoneOffset.inSeconds * 1000);
           } else {
-            seconds = seconds + (DateTime.now().timeZoneOffset.inMilliseconds);
+            seconds = seconds - (DateTime.now().timeZoneOffset.inMilliseconds);
           }
            var replaceAll = BaseTimeUtils.timestampToTimeStr(
               seconds, format: format).replaceAll(" ", "T");
