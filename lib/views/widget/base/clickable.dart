@@ -142,7 +142,7 @@ class Clickable extends StatelessWidget {
                       ? borderRadius
                       : BorderRadius.all(Radius.circular(radius1)),
                   customBorder: customBorder,
-                  enableFeedback: enableFeedback,
+                  enableFeedback: enableFeedback??true,
                   excludeFromSemantics: excludeFromSemantics ?? false,
                 ),
               ),
