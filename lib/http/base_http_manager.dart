@@ -227,11 +227,18 @@ abstract class BaseHttpManager {
   }
 
   httpUpload(url, params,
-      {Options? options, String? method, String? contentType}) {
+      {Options? options,
+      String? method,
+      Map<String, dynamic>? header,
+      String? contentType}) async {
+
+    header = header ?? Map<String, dynamic>();
+    header.addAll(await getBaseHeader());
+
     return netFetch(
         url,
         params,
-        null,
+        header ,
         null != options ? options : Options(method: method ?? 'POST'),
         contentType);
   }
