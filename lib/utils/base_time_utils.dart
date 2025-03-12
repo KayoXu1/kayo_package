@@ -135,7 +135,7 @@ class BaseTimeUtils {
   * now的Timestamp
   * */
   static int nowTimestampSeconds() {
-    return DateTime.now().millisecondsSinceEpoch;
+    return DateTime.now().millisecondsSinceEpoch ~/ 1000;
   }
 
   /*
