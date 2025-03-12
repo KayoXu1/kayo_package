@@ -326,9 +326,7 @@ abstract class BaseHttpManager {
       errorHeader = '$url\n';
     }
 
-    if (null == dio) {
-      dio = Dio();
-    }
+    getDio();
 
     try {
       response = await dio!.request(url!,
@@ -467,6 +465,13 @@ abstract class BaseHttpManager {
               message, BaseCode.RESULT_ERROR_NETWORK_JSON_EXCEPTION)
           .sendMsg();
     }
+  }
+
+  Dio getDio() {
+    if (null == dio) {
+      dio = Dio();
+    }
+    return dio!;
   }
 
   void _onError(ValueChanged<String>? onError, String message) {
