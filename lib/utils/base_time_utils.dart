@@ -132,6 +132,13 @@ class BaseTimeUtils {
   }
 
   /*
+  * now的Timestamp
+  * */
+  static int nowTimestampSeconds() {
+    return DateTime.now().millisecondsSinceEpoch;
+  }
+
+  /*
   * 格式化时间戳
   *
   * */
