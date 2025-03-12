@@ -13,6 +13,7 @@ class TextView extends StatelessWidget {
       {this.color = BaseColorUtils.colorGrey,
       this.borderColor,
       this.fontFamily,
+      this.heightText,
       this.textScaler,
       this.borderWidth = 1,
       this.size = 14,
@@ -77,6 +78,7 @@ class TextView extends StatelessWidget {
   final Color? rightIconColor;
   final TextOverflow? overflow;
   final TextScaler? textScaler;
+  final double? heightText;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +90,7 @@ class TextView extends StatelessWidget {
       softWrap: true,
       textAlign: textAlign,
       style: TextStyle(
+        height: heightText,
         color: color.toDark(
             darkTransColor: darkTransColor,
             textDarkOnlyOpacity: textDarkOnlyOpacity),
