@@ -235,7 +235,7 @@ class _ProviderWidget6State<
         T4 extends ChangeNotifier,
         T5 extends ChangeNotifier,
         T6 extends ChangeNotifier>
-    extends State<ProviderWidget6<T, T2, T3, T4, T5, T6>> {
+    extends State<ProviderWidget6<T, T2, T3, T4, T5, T6>>  with SingleTickerProviderStateMixin {
   late T model;
   T2? model2;
   T3? model3;
@@ -254,57 +254,39 @@ class _ProviderWidget6State<
     widget.onModelReady?.call(model);
     super.initState();
 
-    if (model is BaseViewModel) {
-      (model as BaseViewModel).setBuildContext(context);
-      (model as BaseViewModel).autoLoadData = widget.autoLoadData ?? false;
-      if (widget.autoInitState == true) {
-        (model as BaseViewModel).initState();
-      }
-    }
-    if (model2 is BaseViewModel) {
-      (model2 as BaseViewModel).setBuildContext(context);
-      (model2 as BaseViewModel).autoLoadData = widget.autoLoadData ?? false;
-      if (widget.autoInitState == true) {
-        (model2 as BaseViewModel).initState();
-      }
-    }
-    if (model3 is BaseViewModel) {
-      (model3 as BaseViewModel).setBuildContext(context);
-      (model3 as BaseViewModel).autoLoadData = widget.autoLoadData ?? false;
-      if (widget.autoInitState == true) {
-        (model3 as BaseViewModel).initState();
-      }
-    }
-    if (model4 is BaseViewModel) {
-      (model4 as BaseViewModel).setBuildContext(context);
-      (model4 as BaseViewModel).autoLoadData = widget.autoLoadData ?? false;
-      if (widget.autoInitState == true) {
-        (model4 as BaseViewModel).initState();
-      }
-    }
-    if (model5 is BaseViewModel) {
-      (model5 as BaseViewModel).setBuildContext(context);
-      (model5 as BaseViewModel).autoLoadData = widget.autoLoadData ?? false;
-      if (widget.autoInitState == true) {
-        (model5 as BaseViewModel).initState();
-      }
-    }
-    if (model6 is BaseViewModel) {
-      (model6 as BaseViewModel).setBuildContext(context);
-      (model6 as BaseViewModel).autoLoadData = widget.autoLoadData ?? false;
-      if (widget.autoInitState == true) {
-        (model6 as BaseViewModel).initState();
-      }
-    }
-    if (null != widget.initState) {
-      widget.initState?.call();
-    }
+    _initBaseViewModel(model, widget.autoInitState, widget.autoLoadData,
+        vsync: this);
+    _initBaseViewModel(model2, widget.autoInitState, widget.autoLoadData,
+        vsync: this);
+    _initBaseViewModel(model3, widget.autoInitState, widget.autoLoadData,
+        vsync: this);
+    _initBaseViewModel(model4, widget.autoInitState, widget.autoLoadData,
+        vsync: this);
+    _initBaseViewModel(model5, widget.autoInitState, widget.autoLoadData,
+        vsync: this);
+    _initBaseViewModel(model6, widget.autoInitState, widget.autoLoadData,
+        vsync: this);
+       widget.initState?.call();
 
     _stream = BaseIntentUtils.eventBus.on<String>().listen((page) {
       KayoPackage.share.onNotifyPop
           ?.call(context, page, resultArgs, resultData);
     });
   }
+
+
+  void _initBaseViewModel(dynamic model, bool autoInitState, bool? autoLoadData,
+      {TickerProvider? vsync}) {
+    if (null != model && model is BaseViewModel) {
+      model.setBuildContext(context);
+      model.autoLoadData = autoLoadData ?? false;
+      if (autoInitState) {
+        model.initState();
+      }
+      model.onTickerProvider(vsync);
+    }
+  }
+
 
   @override
   void dispose() {

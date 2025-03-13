@@ -126,4 +126,6 @@ class BaseViewModel with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void onTickerProvider(TickerProvider? vsync) {}
 }
