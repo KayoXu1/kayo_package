@@ -274,4 +274,17 @@ extension BaseWidgetExtension on Widget? {
     }
     return SizedBox();
   }
+
+  ///外面包一层IgnorePointer
+  ///AbsorbPointer本身可以接收点击事件，消耗掉事件，而IgnorePointer无法接收点击事件
+  Widget addRawKeyboardListener(
+      {Key? key, ValueChanged<RawKeyEvent>? onKey, bool enable = true}) {
+    return !enable
+        ? this ?? SizedBox()
+        : RawKeyboardListener(
+        autofocus: true,
+        onKey: onKey,
+        focusNode: FocusNode(),
+        child: this ?? SizedBox());
+  }
 }
