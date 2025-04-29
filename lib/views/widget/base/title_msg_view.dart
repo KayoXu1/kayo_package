@@ -45,6 +45,8 @@ class TitleMsgView extends StatelessWidget {
   ///中间的间隔
   final Widget? spacer;
   final CrossAxisAlignment? crossAxisAlignment;
+  final Function()? onTapMsg;
+  final Color? bgColor;
 
   const TitleMsgView({
     Key? key,
@@ -68,6 +70,8 @@ class TitleMsgView extends StatelessWidget {
     this.padding,
     this.spacer,
     this.crossAxisAlignment,
+    this.bgColor,
+    this.onTapMsg,
   }) : super(key: key);
 
   @override
@@ -82,8 +86,8 @@ class TitleMsgView extends StatelessWidget {
             height: 0,
           ),
       longMsg == true || msgFlex != null
-          ? _buildMsgView().addExpanded(flex: msgFlex ?? 1)
-          : _buildMsgView()
+          ? _buildMsgView(onTap: onTapMsg).addExpanded(flex: msgFlex ?? 1)
+          : _buildMsgView(onTap: onTapMsg)
     ];
 
     if (null != preTitle) children2.insert(0, preTitle!);
@@ -92,7 +96,7 @@ class TitleMsgView extends StatelessWidget {
     return Container(
       margin: margin,
       padding: padding,
-      color: BaseColorUtils.white,
+      color: bgColor ?? BaseColorUtils.white,
       child: Row(
         crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.center,
         children: children2,
@@ -111,12 +115,13 @@ class TitleMsgView extends StatelessWidget {
     );
   }
 
-  TextView _buildMsgView() {
+  TextView _buildMsgView({Function()? onTap}) {
     return TextView(
       msg ?? '',
       fontWeight: msgFontWeight,
       size: msgSize ?? 14,
       textAlign: TextAlign.right,
+      onTap: onTap,
       maxLine: msgMaxLines ?? 1,
       color: msgColor ?? BaseColorUtils.colorBlackLiteLite,
     );
