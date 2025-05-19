@@ -614,4 +614,8 @@ class BaseSysUtils {
       return colors.last;
     }
   }
+
+  static void hideKeyboard(BuildContext context) {
+    FocusScope.of(context).requestFocus(FocusNode());
+  }
 }

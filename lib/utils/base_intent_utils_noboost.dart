@@ -59,6 +59,21 @@ class BaseIntentUtilsNoBoost {
     }
   }
 
+  Future? pushWidget(BuildContext context,
+      {String? routeName,
+        Widget? widget,
+        bool finish = false,
+        bool removeAll = false,
+        dynamic data}) {
+    if (null != routeName) {
+      return _pushByName(context, routeName,
+          finish: finish, removeAll: removeAll);
+    } else if (null != widget) {
+      return _pushByWidget(context, widget,
+          finish: finish, removeAll: removeAll);
+    }
+  }
+
   Future _pushByName(BuildContext context, String routeName,
       {bool finish = false,
       bool removeAll = false,
@@ -77,4 +92,34 @@ class BaseIntentUtilsNoBoost {
       }
     }
   }
+
+  Future _pushByWidget(BuildContext context, Widget widget,
+      {bool finish = false,
+        bool removeAll = false,
+        Map<String, dynamic>? data}) {
+    if (removeAll) {
+      return Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) {
+            return widget;
+          }), (route) => removeAll != true /*route == null*/);
+    } else {
+      if (finish) {
+        return Navigator.of(context)
+            .pushReplacement(MaterialPageRoute(builder: (context) {
+          return widget;
+        }));
+      } else {
+        if (!PlatformUtils.isWeb && Platform.isIOS) {
+          return Navigator.of(context, rootNavigator: true)
+              .push(MaterialPageRoute(builder: (context) {
+            return widget;
+          }));
+        } else {
+          return Navigator.of(context, rootNavigator: true)
+              .push(IPageRouteBuilder(widget));
+        }
+      }
+    }
+  }
+
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:kayo_package/kayo_package.dart';
 import 'package:kayo_package/views/widget/alert/datetime_picker_new/flutter_cupertino_datetime_picker.dart';
 
@@ -117,5 +118,10 @@ class KayoPackage {
 
   setDateFormat(String? format) {
     BaseTimeUtils.formatDefault = format ?? BaseTimeUtils.formatDefault;
+  }
+
+  initHive() async{
+    await Hive.initFlutter();
+    await Hive.openBox('chat');
   }
 }
