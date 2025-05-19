@@ -84,8 +84,11 @@ class AIChatPageState extends State<AIChatPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
-        centerTitle: true,
+        elevation: .5,
+        flexibleSpace: FlexibleSpaceBar(
+          title: Text(widget.title),
+          centerTitle: true,
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.delete),
@@ -145,9 +148,9 @@ class AIChatPageState extends State<AIChatPage> {
                 receivedBackgroundColor: Colors.transparent,
                 padding: message.authorId == _agent.id
                     ? const EdgeInsets.symmetric(
-                  horizontal: 1,
-                  vertical: 1,
-                )
+                        horizontal: 1,
+                        vertical: 1,
+                      )
                     : const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 10,
