@@ -44,7 +44,7 @@ dependencies:
   hive_ce_flutter: ^2.3.1
   image_picker: any
   shared_preferences: ^2.5.2
-  package_info_plus: ^4.2.0
+  package_info_plus: ^8.3.0
 
   #  pull_to_refresh: ">=1.5.8 <=10.0.0"       # May 7, 2021 2.0.0
   pull_to_refresh:
