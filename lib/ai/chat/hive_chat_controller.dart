@@ -53,7 +53,7 @@ class HiveChatController
   Future<void> setMessages(List<Message> messages) async {
     await _box.clear();
     if (messages.isEmpty) {
-      _operationsController.add(ChatOperation.set());
+      _operationsController.add(ChatOperation.set([]));
       return;
     } else {
       await _box.putAll(
@@ -62,7 +62,7 @@ class HiveChatController
             .toList()
             .reduce((acc, map) => {...acc, ...map}),
       );
-      _operationsController.add(ChatOperation.set(messages: messages));
+      _operationsController.add(ChatOperation.set(messages));
     }
   }
 
@@ -88,15 +88,19 @@ class HiveChatController
     var boxValues = _box.values;
     List<Message> m = [];
     try {
-      m = boxValues.map((json) {
-        if (json is Map) {
-          final convertedMap = json.map((key, value) => MapEntry(key.toString(), value));
-          return Message.fromJson(convertedMap);
-        }
-        return null;
-      }).whereType<Message>().toList()
+      m = boxValues
+          .map((json) {
+            if (json is Map) {
+              final convertedMap =
+                  json.map((key, value) => MapEntry(key.toString(), value));
+              return Message.fromJson(convertedMap);
+            }
+            return null;
+          })
+          .whereType<Message>()
+          .toList()
         ..sort(
-              (a, b) => (a.createdAt?.millisecondsSinceEpoch ?? 0).compareTo(
+          (a, b) => (a.createdAt?.millisecondsSinceEpoch ?? 0).compareTo(
             b.createdAt?.millisecondsSinceEpoch ?? 0,
           ),
         );
