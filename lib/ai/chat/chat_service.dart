@@ -34,6 +34,7 @@ class ChatService {
     required String query,
     String? conversationId,
     String? user,
+    Function(String)? onConversationId,
   }) async* {
     user ??= userId;
     try {
@@ -59,7 +60,9 @@ class ChatService {
           final jsonStr = line.substring(6);
           if (jsonStr.trim().isEmpty) continue;
           final Map<String, dynamic> data = json.decode(jsonStr);
-
+          if(data.containsKey('conversation_id')){
+            onConversationId?.call(data['conversation_id']);
+          }
           final event = data['event'];
           if (event == 'agent_message') {
             final chunk = data['answer'] ?? '';

@@ -5,16 +5,16 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flyer_chat_image_message/flyer_chat_image_message.dart';
 import 'package:flyer_chat_text_message/flyer_chat_text_message.dart';
 import 'package:flyer_chat_text_stream_message/flyer_chat_text_stream_message.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:kayo_package/kayo_package.dart';
 import 'package:kayo_package/utils/base_sys_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-
+import 'package:hive_ce/hive.dart';
 import 'ai_chat_stream_manager.dart';
+import 'chat_localizations.dart';
 import 'chat_service.dart';
 import 'hive_chat_controller.dart';
 
-// Define the shared animation duration
 const Duration _kChunkAnimationDuration = Duration(milliseconds: 350);
 
 class AIChatPage extends StatefulWidget {
@@ -23,15 +23,16 @@ class AIChatPage extends StatefulWidget {
   final String apiUrl;
   final String userId;
   final String? hintText;
+  final ChatLocalizations? localizations;
 
-  const AIChatPage({
-    super.key,
-    required this.title,
-    required this.apiKey,
-    required this.apiUrl,
-    required this.userId,
-    this.hintText,
-  });
+  const AIChatPage(
+      {super.key,
+      required this.title,
+      required this.apiKey,
+      required this.apiUrl,
+      required this.userId,
+      this.hintText,
+      this.localizations});
 
   @override
   AIChatPageState createState() => AIChatPageState();
@@ -42,31 +43,32 @@ class AIChatPageState extends State<AIChatPage> {
   final _crossCache = CrossCache();
   final _scrollController = ScrollController();
   final _chatController = HiveChatController();
-
   final _currentUser = const User(id: 'me');
   final _agent = const User(id: 'agent');
-
   late final AIChatStreamManager _streamManager;
-
   late final ChatService chatService;
-
-  // Store scroll state per stream ID
   final Map<String, double> _initialScrollExtents = {};
   final Map<String, bool> _reachedTargetScroll = {};
+
+  String? lastConversationId;
 
   @override
   void initState() {
     super.initState();
+    _chatController.localizations = widget.localizations;
     _streamManager = AIChatStreamManager(
       chatController: _chatController,
       chunkAnimationDuration: _kChunkAnimationDuration,
     );
-
     chatService = ChatService(
       baseUrl: widget.apiUrl,
       apiKey: widget.apiKey,
       userId: widget.userId,
     );
+    Future.delayed(Duration.zero, () async {
+      await _chatController.loadCurrentSession();
+      setState(() {});
+    });
   }
 
   @override
@@ -78,39 +80,206 @@ class AIChatPageState extends State<AIChatPage> {
     super.dispose();
   }
 
+  void _startNewChat() async {
+    try {
+      final messages = _chatController.messages;
+      if (messages.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(widget.localizations?.noMessagesToStartNewChat ??
+                  '当前聊天为空，不能新建聊天')),
+        );
+        return;
+      }
+
+      if (_chatController.currentSessionId != null) {
+        await _chatController.saveSession(_chatController.currentSessionId!);
+      }
+
+      _chatController.startNewSession();
+      _streamManager.reset();
+      _initialScrollExtents.clear();
+      _reachedTargetScroll.clear();
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+      lastConversationId = null;
+
+      setState(() {}); // 刷新页面
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                '${widget.localizations?.startNewChatFailed ?? '创建新聊天失败'}: $e')),
+      );
+    }
+  }
+
+  List<Widget> _buildHistoryItems() {
+    final sessions = _chatController.getSessions();
+    return sessions.map((session) {
+      final sessionId = session['id'] as String;
+      final title = session['title'] as String;
+      final createdAt = DateTime.parse(session['createdAt'] as String);
+      return ListTile(
+        title: Text(title),
+        subtitle: Text(
+          createdAt.toLocal().toString().substring(0, 16),
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () async {
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(widget.localizations?.deleteSessionTitle ?? '删除会话'),
+                content: Text(
+                    widget.localizations?.deleteSessionConfirm ?? '确定要删除此会话吗？'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Text(widget.localizations?.cancel ?? '取消'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: Text(widget.localizations?.delete ?? '删除'),
+                  ),
+                ],
+              ),
+            );
+
+            if (confirm == true) {
+              try {
+                await _chatController.deleteSession(sessionId);
+
+                // 如果删除的是当前会话，则清空
+                // if (_chatController.currentSessionId == sessionId) {
+                //   _chatController.clearMessages();
+                //   _chatController.setCurrentSessionId = null;
+                // }
+
+                setState(() {}); // 刷新 UI
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          '${widget.localizations?.deleteSessionFailed ?? '删除会话失败'}: $e')),
+                );
+              }
+            }
+          },
+        ),
+        onTap: () async {
+          try {
+            await _chatController.loadSession(sessionId);
+            if (_scrollController.hasClients) {
+              _scrollController
+                  .jumpTo(_scrollController.position.maxScrollExtent);
+            }
+            Navigator.pop(context);
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                      '${widget.localizations?.loadSessionFailed ?? '加载会话失败'}: $e')),
+            );
+          }
+        },
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
-        elevation: .5,
-        flexibleSpace: FlexibleSpaceBar(
-          title: Text(widget.title),
-          centerTitle: true,
-        ),
+        elevation: 0.5,
+        title: Text(widget.title),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.delete),
-            tooltip: '清空记录',
-            onPressed: () {
-              _chatController.setMessages([]);
-            },
+            icon: const Icon(Icons.add_circle_outline),
+            tooltip: widget.localizations?.newChat ?? '新聊天',
+            onPressed: _startNewChat,
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: theme.primaryColor,
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  widget.localizations?.chatHistory ?? '聊天历史',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: _buildHistoryItems(),
+              ),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: Text(widget.localizations?.mine ?? '我的'),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyProfilePage(
+                      userId: widget.userId,
+                      localizations: widget.localizations,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       body: ChangeNotifierProvider.value(
         value: _streamManager,
         child: Chat(
           builders: Builders(
             composerBuilder: (context) {
-              return Composer(hintText: widget.hintText ?? '输入消息');
+              return Composer(
+                  hintText: widget.hintText ??
+                      widget.localizations?.startNewChatHintInput ??
+                      '输入消息');
             },
             chatAnimatedListBuilder: (context, itemBuilder) {
               return ChatAnimatedList(
                 scrollController: _scrollController,
                 itemBuilder: itemBuilder,
                 shouldScrollToEndWhenAtBottom: false,
+              );
+            },
+            emptyChatListBuilder: (context) {
+              return Center(
+                child: Padding(
+                    padding: EdgeInsets.only(bottom: 150),
+                    child: Text(
+                      widget.localizations?.startNewChatHint ?? '开始新聊天吧！',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey,
+                      ),
+                    )),
               );
             },
             imageMessageBuilder: (context, message, index) =>
@@ -135,9 +304,9 @@ class AIChatPageState extends State<AIChatPage> {
                     ),
             ),
             textStreamMessageBuilder: (context, message, index) {
-              final streamState = context.watch<AIChatStreamManager>().getState(
-                    message.streamId,
-                  );
+              final streamState = context
+                  .watch<AIChatStreamManager>()
+                  .getState(message.streamId);
               return FlyerChatTextStreamMessage(
                 message: message,
                 index: index,
@@ -175,30 +344,40 @@ class AIChatPageState extends State<AIChatPage> {
 
   void _handleMessageSend(String text) async {
     BaseSysUtils.hideKeyboard(context);
-
-    await _chatController.insertMessage(
-      TextMessage(
-        id: _uuid.v4(),
-        authorId: _currentUser.id,
-        createdAt: DateTime.now().toUtc(),
-        text: text,
-        metadata: isOnlyEmoji(text) ? {'isOnlyEmoji': true} : null,
-      ),
+    final message = TextMessage(
+      id: _uuid.v4(),
+      authorId: _currentUser.id,
+      createdAt: DateTime.now().toUtc(),
+      text: text,
+      metadata: isOnlyEmoji(text) ? {'isOnlyEmoji': true} : null,
     );
-
-    _sendContent(text);
+    try {
+      await _chatController.insertMessage(message);
+      if (_chatController.messages.length == 1) {
+        final sessionsBox =
+            await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
+        await sessionsBox.put(_chatController.currentSessionId, {
+          'id': _chatController.currentSessionId,
+          'title': text.length > 20 ? '${text.substring(0, 20)}...' : text,
+          'createdAt': DateTime.now().toUtc().toIso8601String(),
+        });
+      }
+      _sendContent(text);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content:
+                Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $e')),
+      );
+    }
   }
 
   void _sendContent(String content) async {
-    // Generate a unique ID for the stream
     final streamId = _uuid.v4();
     TextStreamMessage? streamMessage;
-
-    // Store scroll state per stream ID
     _reachedTargetScroll[streamId] = false;
 
     try {
-      // Create and insert the stream message immediately to show loading state
       streamMessage = TextStreamMessage(
         id: streamId,
         authorId: _agent.id,
@@ -208,7 +387,6 @@ class AIChatPageState extends State<AIChatPage> {
       await _chatController.insertMessage(streamMessage);
       _streamManager.startStream(streamId, streamMessage);
 
-      // Scroll to bottom immediately to show the loading message
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients && mounted) {
           _scrollController.animateTo(
@@ -219,37 +397,35 @@ class AIChatPageState extends State<AIChatPage> {
         }
       });
 
-      final response = chatService.sendMessageStream(query: content);
+      final response = chatService.sendMessageStream(
+          query: content,
+          conversationId: lastConversationId,
+          onConversationId: (d) {
+            lastConversationId = d;
+          });
 
       await for (final chunk in response) {
         if (chunk.text != null) {
           final textChunk = chunk.text!;
-          if (textChunk.isEmpty) continue; // Skip empty chunks
+          if (textChunk.isEmpty) continue;
 
-          // Send chunk to the manager - this triggers notifyListeners
           _streamManager.addChunk(streamId, textChunk);
-
-          // Schedule scroll check after the frame rebuilds
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!_scrollController.hasClients || !mounted) return;
 
-            // Retrieve state for this specific stream
             var initialExtent = _initialScrollExtents[streamId];
             final reachedTarget = _reachedTargetScroll[streamId] ?? false;
 
-            if (reachedTarget) return; // Already scrolled to target
+            if (reachedTarget) return;
 
-            // Store initial extent after first chunk caused rebuild
             initialExtent ??= _initialScrollExtents[streamId] =
                 _scrollController.position.maxScrollExtent;
 
-            // Only scroll if the list is scrollable
             if (initialExtent > 0) {
-              // Calculate target scroll position
               final targetScroll = initialExtent +
                   _scrollController.position.viewportDimension -
                   MediaQuery.of(context).padding.bottom -
-                  168; // height of the composer + height of the app bar + visual buffer of 8
+                  168;
 
               if (_scrollController.position.maxScrollExtent > targetScroll) {
                 _scrollController.animateTo(
@@ -257,10 +433,8 @@ class AIChatPageState extends State<AIChatPage> {
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.linearToEaseOut,
                 );
-                // Mark that we've reached the target for this stream
                 _reachedTargetScroll[streamId] = true;
               } else {
-                // If we haven't reached target position yet, scroll to bottom
                 _scrollController.animateTo(
                   _scrollController.position.maxScrollExtent,
                   duration: const Duration(milliseconds: 250),
@@ -272,20 +446,57 @@ class AIChatPageState extends State<AIChatPage> {
         }
       }
 
-      // Stream completed successfully
       if (streamMessage != null) {
         await _streamManager.completeStream(streamId);
       }
     } catch (error) {
-      // Catch errors during stream processing
       debugPrint('Unhandled error for stream $streamId: $error');
       if (streamMessage != null) {
         await _streamManager.errorStream(streamId, error);
       }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                '${widget.localizations?.sendFailed ?? '发送消息失败'}: $error')),
+      );
     } finally {
-      // Clean up scroll state for this stream ID when done/errored
       _initialScrollExtents.remove(streamId);
       _reachedTargetScroll.remove(streamId);
     }
+  }
+}
+
+class MyProfilePage extends StatelessWidget {
+  final String userId;
+  final ChatLocalizations? localizations;
+
+  const MyProfilePage({super.key, required this.userId, this.localizations});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(localizations?.mine ?? '我的'),
+        centerTitle: true,
+      ),
+      body: Container(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('ID: $userId',
+                style:
+                    TextStyle(fontSize: 18, color: BaseColorUtils.colorAccent)),
+            const SizedBox(height: 60),
+            ElevatedButton(
+              onPressed: () {
+                localizations?.logout();
+              },
+              child: Text(localizations?.userLoginExit ?? '退出登录'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
