@@ -14,6 +14,7 @@ import 'ai_chat_stream_manager.dart';
 import 'chat_localizations.dart';
 import 'chat_service.dart';
 import 'hive_chat_controller.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 const Duration _kChunkAnimationDuration = Duration(milliseconds: 350);
 
@@ -473,35 +474,54 @@ class AIChatPageState extends State<AIChatPage> {
   }
 }
 
-class MyProfilePage extends StatelessWidget {
+class MyProfilePage extends StatefulWidget {
   final String userId;
   final ChatLocalizations? localizations;
 
   const MyProfilePage({super.key, required this.userId, this.localizations});
 
   @override
+  State<MyProfilePage> createState() => _MyProfilePageState();
+}
+
+class _MyProfilePageState extends State<MyProfilePage> {
+  String _version = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _version = info.version;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(localizations?.mine ?? '我的'),
+        title: Text(widget.localizations?.mine ?? '我的'),
         centerTitle: true,
       ),
       body: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'ID: $userId',
-              style:
-              TextStyle(fontSize: 18, color: BaseColorUtils.colorAccent),
+              'Version: $_version',
+              style: TextStyle(fontSize: 18, color: BaseColorUtils.colorAccent),
             ),
             const SizedBox(height: 60),
             ElevatedButton(
               onPressed: () {
-                localizations?.logout();
+                widget.localizations?.logout();
               },
-              child: Text(localizations?.userLoginExit ?? '退出登录'),
+              child: Text(widget.localizations?.userLoginExit ?? '退出登录'),
             ),
           ],
         ),
