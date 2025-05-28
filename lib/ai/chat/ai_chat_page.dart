@@ -25,14 +25,15 @@ class AIChatPage extends StatefulWidget {
   final String? hintText;
   final ChatLocalizations? localizations;
 
-  const AIChatPage(
-      {super.key,
-      required this.title,
-      required this.apiKey,
-      required this.apiUrl,
-      required this.userId,
-      this.hintText,
-      this.localizations});
+  const AIChatPage({
+    super.key,
+    required this.title,
+    required this.apiKey,
+    required this.apiUrl,
+    required this.userId,
+    this.hintText,
+    this.localizations,
+  });
 
   @override
   AIChatPageState createState() => AIChatPageState();
@@ -49,8 +50,6 @@ class AIChatPageState extends State<AIChatPage> {
   late final ChatService chatService;
   final Map<String, double> _initialScrollExtents = {};
   final Map<String, bool> _reachedTargetScroll = {};
-
-  String? lastConversationId;
 
   @override
   void initState() {
@@ -86,8 +85,9 @@ class AIChatPageState extends State<AIChatPage> {
       if (messages.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(widget.localizations?.noMessagesToStartNewChat ??
-                  '当前聊天为空，不能新建聊天')),
+            content: Text(widget.localizations?.noMessagesToStartNewChat ??
+                '当前聊天为空，不能新建聊天'),
+          ),
         );
         return;
       }
@@ -103,14 +103,14 @@ class AIChatPageState extends State<AIChatPage> {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(0);
       }
-      lastConversationId = null;
-
-      setState(() {}); // 刷新页面
+      setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                '${widget.localizations?.startNewChatFailed ?? '创建新聊天失败'}: $e')),
+          content: Text(
+            '${widget.localizations?.startNewChatFailed ?? '创建新聊天失败'}: $e',
+          ),
+        ),
       );
     }
   }
@@ -133,7 +133,8 @@ class AIChatPageState extends State<AIChatPage> {
             final confirm = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                title: Text(widget.localizations?.deleteSessionTitle ?? '删除会话'),
+                title:
+                Text(widget.localizations?.deleteSessionTitle ?? '删除会话'),
                 content: Text(
                     widget.localizations?.deleteSessionConfirm ?? '确定要删除此会话吗？'),
                 actions: [
@@ -152,19 +153,14 @@ class AIChatPageState extends State<AIChatPage> {
             if (confirm == true) {
               try {
                 await _chatController.deleteSession(sessionId);
-
-                // 如果删除的是当前会话，则清空
-                // if (_chatController.currentSessionId == sessionId) {
-                //   _chatController.clearMessages();
-                //   _chatController.setCurrentSessionId = null;
-                // }
-
-                setState(() {}); // 刷新 UI
+                setState(() {});
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                      content: Text(
-                          '${widget.localizations?.deleteSessionFailed ?? '删除会话失败'}: $e')),
+                    content: Text(
+                      '${widget.localizations?.deleteSessionFailed ?? '删除会话失败'}: $e',
+                    ),
+                  ),
                 );
               }
             }
@@ -181,8 +177,10 @@ class AIChatPageState extends State<AIChatPage> {
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                  content: Text(
-                      '${widget.localizations?.loadSessionFailed ?? '加载会话失败'}: $e')),
+                content: Text(
+                  '${widget.localizations?.loadSessionFailed ?? '加载会话失败'}: $e',
+                ),
+              ),
             );
           }
         },
@@ -258,9 +256,10 @@ class AIChatPageState extends State<AIChatPage> {
           builders: Builders(
             composerBuilder: (context) {
               return Composer(
-                  hintText: widget.hintText ??
-                      widget.localizations?.startNewChatHintInput ??
-                      '输入消息');
+                hintText: widget.hintText ??
+                    widget.localizations?.startNewChatHintInput ??
+                    '输入消息',
+              );
             },
             chatAnimatedListBuilder: (context, itemBuilder) {
               return ChatAnimatedList(
@@ -272,41 +271,41 @@ class AIChatPageState extends State<AIChatPage> {
             emptyChatListBuilder: (context) {
               return Center(
                 child: Padding(
-                    padding: EdgeInsets.only(bottom: 150),
-                    child: Text(
-                      widget.localizations?.startNewChatHint ?? '开始新聊天吧！',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.grey,
-                      ),
-                    )),
+                  padding: EdgeInsets.only(bottom: 150),
+                  child: Text(
+                    widget.localizations?.startNewChatHint ?? '开始新聊天吧！',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
               );
             },
             imageMessageBuilder: (context, message, index) =>
                 FlyerChatImageMessage(
-              message: message,
-              index: index,
-              showTime: false,
-              showStatus: false,
-            ),
+                  message: message,
+                  index: index,
+                  showTime: false,
+                  showStatus: false,
+                ),
             textMessageBuilder: (context, message, index) =>
                 FlyerChatTextMessage(
-              message: message,
-              index: index,
-              showTime: false,
-              showStatus: false,
-              receivedBackgroundColor: Colors.transparent,
-              padding: message.authorId == _agent.id
-                  ? EdgeInsets.zero
-                  : const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-            ),
+                  message: message,
+                  index: index,
+                  showTime: false,
+                  showStatus: false,
+                  receivedBackgroundColor: Colors.transparent,
+                  padding: message.authorId == _agent.id
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                ),
             textStreamMessageBuilder: (context, message, index) {
-              final streamState = context
-                  .watch<AIChatStreamManager>()
-                  .getState(message.streamId);
+              final streamState =
+              context.watch<AIChatStreamManager>().getState(message.streamId);
               return FlyerChatTextStreamMessage(
                 message: message,
                 index: index,
@@ -317,13 +316,13 @@ class AIChatPageState extends State<AIChatPage> {
                 receivedBackgroundColor: Colors.transparent,
                 padding: message.authorId == _agent.id
                     ? const EdgeInsets.symmetric(
-                        horizontal: 1,
-                        vertical: 1,
-                      )
+                  horizontal: 1,
+                  vertical: 1,
+                )
                     : const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               );
             },
           ),
@@ -355,19 +354,21 @@ class AIChatPageState extends State<AIChatPage> {
       await _chatController.insertMessage(message);
       if (_chatController.messages.length == 1) {
         final sessionsBox =
-            await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
+        await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
         await sessionsBox.put(_chatController.currentSessionId, {
           'id': _chatController.currentSessionId,
           'title': text.length > 20 ? '${text.substring(0, 20)}...' : text,
           'createdAt': DateTime.now().toUtc().toIso8601String(),
+          'lastConversationId': null, // Initialize for new session
         });
       }
       _sendContent(text);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content:
-                Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $e')),
+          content:
+          Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $e'),
+        ),
       );
     }
   }
@@ -398,11 +399,16 @@ class AIChatPageState extends State<AIChatPage> {
       });
 
       final response = chatService.sendMessageStream(
-          query: content,
-          conversationId: lastConversationId,
-          onConversationId: (d) {
-            lastConversationId = d;
-          });
+        query: content,
+        conversationId: _chatController.lastConversationId, // Use controller's lastConversationId
+        onConversationId: (d) {
+          _chatController.lastConversationId = d; // Update lastConversationId
+          if (_chatController.currentSessionId != null) {
+            _chatController
+                .saveSession(_chatController.currentSessionId!); // Save session
+          }
+        },
+      );
 
       await for (final chunk in response) {
         if (chunk.text != null) {
@@ -456,8 +462,9 @@ class AIChatPageState extends State<AIChatPage> {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                '${widget.localizations?.sendFailed ?? '发送消息失败'}: $error')),
+          content:
+          Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $error'),
+        ),
       );
     } finally {
       _initialScrollExtents.remove(streamId);
@@ -484,9 +491,11 @@ class MyProfilePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('ID: $userId',
-                style:
-                    TextStyle(fontSize: 18, color: BaseColorUtils.colorAccent)),
+            Text(
+              'ID: $userId',
+              style:
+              TextStyle(fontSize: 18, color: BaseColorUtils.colorAccent),
+            ),
             const SizedBox(height: 60),
             ElevatedButton(
               onPressed: () {

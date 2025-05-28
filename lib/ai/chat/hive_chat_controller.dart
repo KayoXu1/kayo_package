@@ -10,89 +10,113 @@ class HiveChatController
     with UploadProgressMixin, ScrollToMessageMixin
     implements ChatController {
   String? _currentSessionId;
-    ChatLocalizations? localizations;
+  String? _lastConversationId; // Add lastConversationId field
+  ChatLocalizations? localizations;
   final Map<String, Box> _sessionBoxes = {};
   final _operationsController = StreamController<ChatOperation>.broadcast();
   final _uuid = const Uuid();
 
-  // Initialize the controller with a default session
+  // Getter and setter for lastConversationId
+  String? get lastConversationId => _lastConversationId;
+
+  set lastConversationId(String? value) {
+    _lastConversationId = value;
+  }
+
   HiveChatController() {
     var cSessionId = AIChatUtils.loadCurrentSessionId();
     _currentSessionId = cSessionId ?? _uuid.v4();
     _openBox(_currentSessionId!);
     if (cSessionId == null) {
-      _addSessionToMetadata(_currentSessionId!,
-          '${localizations?.session??'会话'} ${DateTime.now().toString().substring(0, 10)}');
+      _addSessionToMetadata(
+        _currentSessionId!,
+        '${localizations?.session ?? '会话'} ${DateTime.now().toString().substring(0, 10)}',
+      );
     }
   }
 
-  // Open or get a Hive box for a specific session
   Future<Box> _openBox(String sessionId) async {
     if (!_sessionBoxes.containsKey(sessionId)) {
-      _sessionBoxes[sessionId] = await Hive.openBox('${AIChatUtils.currentApiKey}_chat_$sessionId');
+      _sessionBoxes[sessionId] =
+          await Hive.openBox('${AIChatUtils.currentApiKey}_chat_$sessionId');
     }
     return _sessionBoxes[sessionId]!;
   }
 
-  // Add session metadata to the sessions box
   Future<void> _addSessionToMetadata(String sessionId, String title) async {
-    final sessionsBox = await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
+    final sessionsBox =
+        await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
     await sessionsBox.put(sessionId, {
       'id': sessionId,
       'title': title,
       'createdAt': DateTime.now().toUtc().toIso8601String(),
+      'lastConversationId': null, // Initialize lastConversationId
     });
   }
 
-  // Start a new session
   String startNewSession({String? title}) {
     _currentSessionId = _uuid.v4();
+    _lastConversationId = null; // Reset lastConversationId for new session
     AIChatUtils.saveCurrentSessionId(_currentSessionId);
     _openBox(_currentSessionId!);
     _addSessionToMetadata(
       _currentSessionId!,
-      title ?? '${localizations?.session??'会话'} ${DateTime.now().toString().substring(0, 10)}',
+      title ??
+          '${localizations?.session ?? '会话'} ${DateTime.now().toString().substring(0, 10)}',
     );
     _operationsController.add(ChatOperation.set([]));
     return _currentSessionId!;
   }
 
-  // Save current session (optional, as messages are saved in real-time)
   Future<void> saveSession(String sessionId) async {
     final box = await _openBox(sessionId);
-    await box.flush(); // Ensure all data is written to disk
+    await box.flush();
+    final sessionsBox =
+        await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
+    final session = sessionsBox.get(sessionId);
+    if (session != null) {
+      session['lastConversationId'] =
+          _lastConversationId; // Save lastConversationId
+      await sessionsBox.put(sessionId, session);
+    }
   }
 
-  // Load a specific session
   Future<void> loadSession(String sessionId) async {
     if (_currentSessionId != sessionId) {
       _currentSessionId = sessionId;
       AIChatUtils.saveCurrentSessionId(sessionId);
       await _openBox(sessionId);
-      _operationsController.add(ChatOperation.set(messages));
-    }
-  } // Load a specific session
-
-  Future<void> loadCurrentSession() async {
-    if (_currentSessionId != null) {
-      await _openBox(_currentSessionId!);
+      final sessionsBox =
+          await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
+      final session = sessionsBox.get(sessionId);
+      _lastConversationId =
+          session?['lastConversationId'] as String?; // Load lastConversationId
       _operationsController.add(ChatOperation.set(messages));
     }
   }
 
-  // Get all session IDs and metadata
+  Future<void> loadCurrentSession() async {
+    if (_currentSessionId != null) {
+      await _openBox(_currentSessionId!);
+      final sessionsBox =
+          await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
+      final session = sessionsBox.get(_currentSessionId!);
+      _lastConversationId =
+          session?['lastConversationId'] as String?; // Load lastConversationId
+      _operationsController.add(ChatOperation.set(messages));
+    }
+  }
+
   List<Map<String, dynamic>> getSessions() {
     final sessionsBox = Hive.box('${AIChatUtils.currentApiKey}_sessions');
     return sessionsBox.values
         .whereType<Map>()
         .map((map) => map.map((key, value) => MapEntry(key.toString(), value)))
         .toList()
-      ..sort((a, b) =>
-          DateTime.parse(b['createdAt'])
-              .compareTo(DateTime.parse(a['createdAt'])));
+      ..sort((a, b) => DateTime.parse(b['createdAt'])
+          .compareTo(DateTime.parse(a['createdAt'])));
   }
 
-  // Get current session ID
   String? get currentSessionId => _currentSessionId;
 
   set setCurrentSessionId(String? value) {
@@ -188,20 +212,18 @@ class HiveChatController
     try {
       m = boxValues
           .map((json) {
-        if (json is Map) {
-          final convertedMap =
-          json.map((key, value) => MapEntry(key.toString(), value));
-          return Message.fromJson(convertedMap);
-        }
-        return null;
-      })
+            if (json is Map) {
+              final convertedMap =
+                  json.map((key, value) => MapEntry(key.toString(), value));
+              return Message.fromJson(convertedMap);
+            }
+            return null;
+          })
           .whereType<Message>()
           .toList()
         ..sort(
-              (a, b) =>
-              (a.createdAt?.millisecondsSinceEpoch ?? 0).compareTo(
-                b.createdAt?.millisecondsSinceEpoch ?? 0,
-              ),
+          (a, b) => (a.createdAt?.millisecondsSinceEpoch ?? 0)
+              .compareTo(b.createdAt?.millisecondsSinceEpoch ?? 0),
         );
     } catch (e) {
       print('Error in messages getter: $e');
@@ -220,7 +242,6 @@ class HiveChatController
     _operationsController.add(ChatOperation.set([]));
   }
 
-  // Delete a specific session
   Future<void> deleteSession(String sessionId) async {
     if (_sessionBoxes.containsKey(sessionId)) {
       final box = _sessionBoxes[sessionId]!;
@@ -228,12 +249,13 @@ class HiveChatController
       await box.deleteFromDisk();
       _sessionBoxes.remove(sessionId);
     }
-    final sessionsBox = await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
+    final sessionsBox =
+        await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
     await sessionsBox.delete(sessionId);
     if (_currentSessionId == sessionId) {
       if (_sessionBoxes.isNotEmpty) {
         _currentSessionId = _sessionBoxes.keys.last;
-        if (null == _currentSessionId) {
+        if (_currentSessionId == null) {
           startNewSession();
         } else {
           loadCurrentSession();
