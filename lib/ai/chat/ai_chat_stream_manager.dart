@@ -1,21 +1,30 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_chat_core/flutter_chat_core.dart';
+import 'package:flutter_chat_core/flutter_chat_core.dart'; // Ensure this import path is correct
 import 'package:flyer_chat_text_stream_message/flyer_chat_text_stream_message.dart';
+
+// Assuming ChatController is from flutter_chat_core or a compatible package
+// If it's a custom ChatController, ensure it has the updateMessage method.
+// import type { ChatController } from 'flutter_chat_core'; // This is conceptual
 
 class AIChatStreamManager extends ChangeNotifier {
   final ChatController _chatController;
-  final Duration _chunkAnimationDuration;
+  // final Duration _chunkAnimationDuration; // Keep if FlyerChatTextStreamMessage still uses it meaningfully
   final Map<String, StreamState> _streamStates = {};
-  final Map<String, int> _streamLengthMap = {};
+  // _streamLengthMap is less relevant for per-character, but harmless
+  // final Map<String, int> _streamLengthMap = {};
   final Map<String, TextStreamMessage> _originalMessages = {};
   final Map<String, String> _accumulatedTexts = {};
-  final Map<String, int> chunkAnimationDurationMap = {};
+  // chunkAnimationDurationMap is likely not needed for per-character typing effect's main delay
+  // final Map<String, int> chunkAnimationDurationMap = {};
+
+  // Define the delay for each character to appear
+  static const Duration _kCharacterTypingDelay = Duration(milliseconds: 30); // Adjust for typing speed (e.g., 30-80ms)
 
   AIChatStreamManager({
     required ChatController chatController,
-    required Duration chunkAnimationDuration,
-  })  : _chatController = chatController,
-        _chunkAnimationDuration = chunkAnimationDuration;
+    required Duration chunkAnimationDuration, // This is passed to FlyerChatTextStreamMessage
+  })  : _chatController = chatController;
+  // _chunkAnimationDuration = chunkAnimationDuration;
 
   StreamState getState(String? streamId) {
     return _streamStates[streamId] ?? const StreamStateLoading();
@@ -25,100 +34,111 @@ class AIChatStreamManager extends ChangeNotifier {
     _originalMessages[streamId] = originalMessage;
     _streamStates[streamId] = const StreamStateLoading();
     _accumulatedTexts[streamId] = '';
-    _streamLengthMap.clear();
+    // _streamLengthMap.clear(); // Not strictly needed if we don't use it heavily
     notifyListeners();
   }
 
-  void addChunk(String streamId, String chunk) {
-    chunkAnimationDurationMap[streamId] = 0;
-    const int maxChunkSize = 20;
-    if (chunk.length <= maxChunkSize) {
-      addChunk_(streamId, chunk);
-      chunkAnimationDurationMap[streamId] =
-          getChunkAnimationDuration_(chunk.length).inMilliseconds;
+
+
+  void _addSingleCharacterOrSmallChunk(String streamId, String charContent) { // charContent is a single character
+    if (!_streamStates.containsKey(streamId) || _originalMessages[streamId] == null) {
+      // Stream might have been completed or errored out
       return;
     }
 
-    for (int index = 0; index < chunk.length; index += maxChunkSize) {
-      final endIndex = (index + maxChunkSize).clamp(0, chunk.length);
-      final subChunk = chunk.substring(index, endIndex);
+    // --- MODIFIED PART ---
+    // For true character-by-character, append exactly what is received.
+    // The AI is responsible for sending correct newlines for formatting.
+    // The previous complex newline processing is removed.
+    _accumulatedTexts[streamId] = (_accumulatedTexts[streamId] ?? '') + charContent;
+    // --- END OF MODIFIED PART ---
 
-      debugPrint('AIChatStreamManager: addChunk_ $streamId _ ${index}');
-      addChunk_(streamId, subChunk);
+    _streamStates[streamId] = StreamStateStreaming(_accumulatedTexts[streamId]!);
+    notifyListeners();
+  }
 
-      var subDuration =
-          getChunkAnimationDuration_(subChunk.length).inMilliseconds;
-      if (chunkAnimationDurationMap.containsKey(streamId)) {
-        chunkAnimationDurationMap[streamId] =
-            chunkAnimationDurationMap[streamId]! + subDuration;
-      } else {
-        chunkAnimationDurationMap[streamId] = subDuration;
+
+  // Modify addChunk to be async and process character by character
+  Future<void> addChunk(String streamId, String chunk) async {
+    // Check if stream is still valid at the beginning of processing a network chunk
+    if (!_streamStates.containsKey(streamId) || _originalMessages[streamId] == null) {
+      debugPrint('AIChatStreamManager: addChunk called for non-existent or completed stream $streamId');
+      return;
+    }
+
+    for (int i = 0; i < chunk.length; i++) {
+      // Crucially, check *inside* the loop too, as the stream might be
+      // completed or errored by another part of the application,
+      // or even by a quick user action.
+      if (!_streamStates.containsKey(streamId) || _originalMessages[streamId] == null) {
+        debugPrint('AIChatStreamManager: Stream $streamId was cleaned up mid-chunk processing.');
+        return; // Stop processing characters for this chunk
       }
-    }
-  }
 
-  void addChunk_(String streamId, String chunk) {
-    if (!_streamStates.containsKey(streamId)) {
-      return;
-    }
-    _streamLengthMap[streamId] = chunk.length;
+      final char = chunk[i];
+      _addSingleCharacterOrSmallChunk(streamId, char);
 
-    var processedChunk = chunk;
-    if (processedChunk.endsWith('\n') && !processedChunk.endsWith('\n\n')) {
-      processedChunk = processedChunk.substring(0, processedChunk.length - 1);
+      // Wait for the character typing delay
+      await Future.delayed(_kCharacterTypingDelay);
     }
-
-    _accumulatedTexts[streamId] =
-        (_accumulatedTexts[streamId] ?? '') + processedChunk;
-    _streamStates[streamId] =
-        StreamStateStreaming(_accumulatedTexts[streamId]!);
-    notifyListeners();
   }
 
   Future<void> completeStream(String streamId) async {
+    // A short delay to ensure the last character has "typed out"
+    // and UI has a chance to render before finalizing.
+    await Future.delayed(_kCharacterTypingDelay * 2); // e.g., twice the char delay
+
     final finalText = _accumulatedTexts[streamId];
-    if (finalText == null) {
+    final originalMessage = _originalMessages[streamId];
+
+    if (finalText == null || originalMessage == null) {
       debugPrint(
-          'AIChatStreamManager: Cannot complete stream, missing accumulated text for $streamId');
+          'AIChatStreamManager: Cannot complete stream $streamId. Missing accumulated text or original message.');
       _cleanupStream(streamId);
       return;
     }
 
-// await Future.delayed(getChunkAnimationDuration(streamId));
-
-    var sleepDuration = chunkAnimationDurationMap[streamId] ??
-        getChunkAnimationDuration(streamId).inMilliseconds;
-
-    await Future.delayed(Duration(milliseconds: sleepDuration));
-
-    debugPrint(
-        'AIChatStreamManager: addChunk_ $streamId _ sleep: $sleepDuration');
-
-    final originalMessage = _originalMessages[streamId];
-    if (originalMessage == null) {
-      debugPrint(
-          'AIChatStreamManager: State for $streamId was cleaned up during delay. Skipping update.');
+    // Check if the stream was already cleaned up (e.g. by an error)
+    // This can happen if an error occurs and errorStream is called, cleaning up,
+    // then completeStream is called from a finally block.
+    if (!_streamStates.containsKey(streamId) && !_originalMessages.containsKey(streamId)) {
+      debugPrint('AIChatStreamManager: Stream $streamId was already cleaned up before completion logic.');
       return;
     }
+
 
     final finalTextMessage = TextMessage(
       id: originalMessage.id,
       authorId: originalMessage.authorId,
       createdAt: originalMessage.createdAt,
       text: finalText,
+      // Copy other relevant fields from originalMessage if necessary
+      // remoteId: originalMessage.remoteId,
+      // repliedTo: originalMessage.repliedTo,
+      // roomId: originalMessage.roomId,
+      // showStatus: originalMessage.showStatus,
+      // status: originalMessage.status, // Final status would be 'delivered' or 'seen'
+      // type: originalMessage.type, // Should remain MessageType.text
+      // uri: originalMessage.uri,
+      // metadata: originalMessage.metadata, // Carry over metadata if any
     );
 
     try {
-      await _chatController.updateMessage(originalMessage, finalTextMessage);
+      // Ensure _chatController can handle TextStreamMessage -> TextMessage update
+      await _chatController.updateMessage(finalTextMessage, finalTextMessage); // Update with the final TextMessage
     } catch (e) {
       debugPrint(
-          'AIChatStreamManager: Failed to update message $streamId after delay: $e');
+          'AIChatStreamManager: Failed to update message $streamId to final TextMessage: $e');
+      // Optionally, handle this error more gracefully, e.g., by calling errorStream
     } finally {
       _cleanupStream(streamId);
     }
   }
 
   Future<void> errorStream(String streamId, Object error) async {
+    // Small delay for consistency if needed
+    // await Future.delayed(_kCharacterTypingDelay);
+
     final originalMessage = _originalMessages[streamId];
     final currentText = _accumulatedTexts[streamId] ?? '';
 
@@ -133,16 +153,17 @@ class AIChatStreamManager extends ChangeNotifier {
       id: originalMessage.id,
       authorId: originalMessage.authorId,
       createdAt: originalMessage.createdAt,
-      text: '$currentText\n\n[Error generating response]',
+      text: '$currentText\n\n[Error generating response: ${error.toString()}]',
+      // Consider adding metadata to indicate this message ended in an error
+      // metadata: { ...originalMessage.metadata, 'hasError': true },
     );
 
     try {
-      await _chatController.updateMessage(originalMessage, errorTextMessage);
+      await _chatController.updateMessage(errorTextMessage, errorTextMessage); // Update with error TextMessage
     } catch (e) {
       debugPrint(
-          'AIChatStreamManager: Failed to update message $streamId after error: $e');
+          'AIChatStreamManager: Failed to update message $streamId to error TextMessage: $e');
     }
-
     _cleanupStream(streamId);
   }
 
@@ -150,14 +171,17 @@ class AIChatStreamManager extends ChangeNotifier {
     _streamStates.remove(streamId);
     _originalMessages.remove(streamId);
     _accumulatedTexts.remove(streamId);
+    // _streamLengthMap.remove(streamId);
+    // chunkAnimationDurationMap.remove(streamId);
     notifyListeners();
   }
 
-// Added reset method to clear all stream states
   void reset() {
     _streamStates.clear();
     _originalMessages.clear();
     _accumulatedTexts.clear();
+    // _streamLengthMap.clear();
+    // chunkAnimationDurationMap.clear();
     notifyListeners();
   }
 
@@ -166,45 +190,20 @@ class AIChatStreamManager extends ChangeNotifier {
     _streamStates.clear();
     _originalMessages.clear();
     _accumulatedTexts.clear();
+    // _streamLengthMap.clear();
+    // chunkAnimationDurationMap.clear();
     super.dispose();
   }
 
-  Duration getChunkAnimationDuration(String streamId) {
-    const defaultDuration = Duration(milliseconds: 350);
-
-    if (_streamLengthMap.containsKey(streamId)) {
-      final sl = _streamLengthMap[streamId] ?? 0;
-      return getChunkAnimationDuration_(sl);
-    } else {
-      debugPrint(
-          'AIChatStreamManager: Calculated duration for $streamId: ${defaultDuration.inMicroseconds}  --  001');
-      return defaultDuration;
-    }
-  }
-
-  Duration getChunkAnimationDuration_(int truckLength) {
-    const defaultDuration = Duration(milliseconds: 350); // 默认动画时长
-    const minDuration = Duration(milliseconds: 200); // 最小动画时长
-    const maxDuration = Duration(milliseconds: 800); // 最大动画时长
-    const baseLength = 20; // 基准文本长度
-    const scalingFactor = 15.0; // 每增加 baseLength 字符，增加 15ms
-
-    final sl = truckLength;
-    if (sl <= baseLength) {
-      debugPrint(
-          'AIChatStreamManager: Calculated duration for  ${defaultDuration.inMilliseconds} -- 000');
-      return defaultDuration;
-    } else {
-// 线性增长，但限制在 minDuration 和 maxDuration 之间
-      final calculatedDuration =
-          defaultDuration.inMilliseconds + (sl / baseLength) * scalingFactor;
-      final clampedDuration = calculatedDuration.clamp(
-        minDuration.inMilliseconds,
-        maxDuration.inMilliseconds,
-      );
-      debugPrint(
-          'AIChatStreamManager: Calculated duration for $clampedDuration -- ${sl}');
-      return Duration(milliseconds: clampedDuration.toInt());
-    }
-  }
+// The getChunkAnimationDuration_ and getChunkAnimationDuration methods
+// are no longer directly used for the per-character typing effect's delay.
+// However, FlyerChatTextStreamMessage still takes _kChunkAnimationDuration.
+// If that component does its own animation over that duration for each text update,
+// you might want it to be very short (e.g., Duration.zero or ~50ms) so it doesn't
+// interfere with the character-by-character "typing" illusion.
+// The existing _kChunkAnimationDuration in AIChatPage is 350ms.
+// This might make each character "animate in" over 350ms, which is not ideal.
+// You may need to adjust the `chunkAnimationDuration` prop for `FlyerChatTextStreamMessage`
+// in `AIChatPage.build` to a much smaller value or even `Duration.zero`
+// if its internal animation is too slow for the character-by-character effect.
 }

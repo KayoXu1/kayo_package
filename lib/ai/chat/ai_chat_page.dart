@@ -16,7 +16,8 @@ import 'chat_service.dart';
 import 'hive_chat_controller.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-const Duration _kChunkAnimationDuration = Duration(milliseconds: 350);
+const Duration _kFlyerMessageInternalAnimationDuration =
+    Duration(milliseconds: 50);
 
 class AIChatPage extends StatefulWidget {
   final String title;
@@ -58,7 +59,7 @@ class AIChatPageState extends State<AIChatPage> {
     _chatController.localizations = widget.localizations;
     _streamManager = AIChatStreamManager(
       chatController: _chatController,
-      chunkAnimationDuration: _kChunkAnimationDuration,
+      chunkAnimationDuration: _kFlyerMessageInternalAnimationDuration,
     );
     chatService = ChatService(
       baseUrl: widget.apiUrl,
@@ -304,7 +305,6 @@ class AIChatPageState extends State<AIChatPage> {
                         vertical: 10,
                       ),
               );
-
               if (isAgent) {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,7 +322,6 @@ class AIChatPageState extends State<AIChatPage> {
                   .watch<AIChatStreamManager>()
                   .getState(message.streamId);
               final isFromAI = message.authorId == _agent.id;
-
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -332,7 +331,8 @@ class AIChatPageState extends State<AIChatPage> {
                       message: message,
                       index: index,
                       streamState: streamState,
-                      chunkAnimationDuration: _kChunkAnimationDuration,
+                      chunkAnimationDuration:
+                          _kFlyerMessageInternalAnimationDuration,
                       showTime: false,
                       showStatus: false,
                       receivedBackgroundColor: Colors.transparent,
@@ -413,18 +413,20 @@ class AIChatPageState extends State<AIChatPage> {
   void _sendContent(String content) async {
     final streamId = _uuid.v4();
     TextStreamMessage? streamMessage;
-    _reachedTargetScroll[streamId] = false;
+    _reachedTargetScroll[streamId] = false; // Keep scroll logic as is for now
 
     try {
       streamMessage = TextStreamMessage(
-        id: streamId,
+        id: streamId, // Use streamId as messageId for TextStreamMessage
         authorId: _agent.id,
         createdAt: DateTime.now().toUtc(),
         streamId: streamId,
+        // text: '', // Initial text can be empty
       );
       await _chatController.insertMessage(streamMessage);
       _streamManager.startStream(streamId, streamMessage);
 
+      // Scroll to bottom when new stream message is initiated
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients && mounted) {
           _scrollController.animateTo(
@@ -438,12 +440,10 @@ class AIChatPageState extends State<AIChatPage> {
       final response = chatService.sendMessageStream(
         query: content,
         conversationId: _chatController.lastConversationId,
-        // Use controller's lastConversationId
         onConversationId: (d) {
-          _chatController.lastConversationId = d; // Update lastConversationId
+          _chatController.lastConversationId = d;
           if (_chatController.currentSessionId != null) {
-            _chatController
-                .saveSession(_chatController.currentSessionId!); // Save session
+            _chatController.saveSession(_chatController.currentSessionId!);
           }
         },
       );
@@ -453,10 +453,15 @@ class AIChatPageState extends State<AIChatPage> {
           final textChunk = chunk.text!;
           if (textChunk.isEmpty) continue;
 
-          _streamManager.addChunk(streamId, textChunk);
+          // Await the addChunk to ensure characters are processed sequentially
+          // with delays before fetching the next network chunk.
+          await _streamManager.addChunk(streamId, textChunk);
+
+          // Auto-scroll logic (can be kept or adjusted)
+          // This will now trigger more frequently (per character), so ensure it's efficient
+          // and provides the desired user experience.
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!_scrollController.hasClients || !mounted) return;
-
             var initialExtent = _initialScrollExtents[streamId];
             final reachedTarget = _reachedTargetScroll[streamId] ?? false;
 
@@ -465,48 +470,66 @@ class AIChatPageState extends State<AIChatPage> {
             initialExtent ??= _initialScrollExtents[streamId] =
                 _scrollController.position.maxScrollExtent;
 
-            if (initialExtent > 0) {
-              final targetScroll = initialExtent +
-                  _scrollController.position.viewportDimension -
-                  MediaQuery.of(context).padding.bottom -
-                  168;
+            // Smart scroll: only scroll if near the bottom or to keep new content visible.
+            // This logic might need tuning with per-character updates.
+            // A simpler approach might be to just scroll to maxExtent if the user hasn't scrolled up.
+            bool isAtBottom = _scrollController.position.pixels >=
+                _scrollController.position.maxScrollExtent -
+                    50; // 50px threshold
 
-              if (_scrollController.position.maxScrollExtent > targetScroll) {
-                _scrollController.animateTo(
-                  targetScroll,
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.linearToEaseOut,
-                );
-                _reachedTargetScroll[streamId] = true;
-              } else {
-                _scrollController.animateTo(
-                  _scrollController.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.linearToEaseOut,
-                );
-              }
+            if (isAtBottom) {
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 100),
+                // Faster scroll for frequent updates
+                curve: Curves.linear, // Linear for smooth continuous scroll
+              );
             }
+            // else if (initialExtent > 0) { // More complex target scrolling logic
+            //   final targetScroll = initialExtent +
+            //       _scrollController.position.viewportDimension -
+            //       MediaQuery.of(context).padding.bottom -
+            //       168; // Adjust this offset
+            //   if (_scrollController.position.maxScrollExtent > targetScroll) {
+            //     _scrollController.animateTo(
+            //       targetScroll,
+            //       duration: const Duration(milliseconds: 100),
+            //       curve: Curves.linearToEaseOut,
+            //     );
+            //     _reachedTargetScroll[streamId] = true;
+            //   } else {
+            //     _scrollController.animateTo(
+            //       _scrollController.position.maxScrollExtent,
+            //       duration: const Duration(milliseconds: 100),
+            //       curve: Curves.linearToEaseOut,
+            //     );
+            //   }
+            // }
           });
         }
       }
 
-      if (streamMessage != null) {
-        await _streamManager.completeStream(streamId);
-      }
+      // No need to check streamMessage != null here, as completeStream handles null originalMessage
+      await _streamManager.completeStream(streamId);
     } catch (error) {
-      debugPrint('Unhandled error for stream $streamId: $error');
-      if (streamMessage != null) {
-        await _streamManager.errorStream(streamId, error);
+      debugPrint('AIChatPage: Unhandled error for stream $streamId: $error');
+      // No need to check streamMessage != null here, as errorStream handles null originalMessage
+      await _streamManager.errorStream(streamId, error);
+
+      if (mounted) {
+        // Check if widget is still in the tree
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $error'),
+          ),
+        );
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $error'),
-        ),
-      );
     } finally {
       _initialScrollExtents.remove(streamId);
       _reachedTargetScroll.remove(streamId);
+      // Ensure stream is cleaned up if not already by complete/error
+      // _streamManager.cleanupStream(streamId); // No, completeStream/errorStream already do this.
     }
   }
 }
