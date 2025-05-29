@@ -8,22 +8,28 @@ import 'package:flyer_chat_text_stream_message/flyer_chat_text_stream_message.da
 
 class AIChatStreamManager extends ChangeNotifier {
   final ChatController _chatController;
+
   // final Duration _chunkAnimationDuration; // Keep if FlyerChatTextStreamMessage still uses it meaningfully
   final Map<String, StreamState> _streamStates = {};
+
   // _streamLengthMap is less relevant for per-character, but harmless
   // final Map<String, int> _streamLengthMap = {};
   final Map<String, TextStreamMessage> _originalMessages = {};
   final Map<String, String> _accumulatedTexts = {};
+
   // chunkAnimationDurationMap is likely not needed for per-character typing effect's main delay
   // final Map<String, int> chunkAnimationDurationMap = {};
 
   // Define the delay for each character to appear
-  static const Duration _kCharacterTypingDelay = Duration(milliseconds: 30); // Adjust for typing speed (e.g., 30-80ms)
+  static const Duration _kCharacterTypingDelay =
+      Duration(milliseconds: 30); // Adjust for typing speed (e.g., 30-80ms)
 
   AIChatStreamManager({
     required ChatController chatController,
-    required Duration chunkAnimationDuration, // This is passed to FlyerChatTextStreamMessage
-  })  : _chatController = chatController;
+    required Duration
+        chunkAnimationDuration, // This is passed to FlyerChatTextStreamMessage
+  }) : _chatController = chatController;
+
   // _chunkAnimationDuration = chunkAnimationDuration;
 
   StreamState getState(String? streamId) {
@@ -38,31 +44,27 @@ class AIChatStreamManager extends ChangeNotifier {
     notifyListeners();
   }
 
-
-
-  void _addSingleCharacterOrSmallChunk(String streamId, String charContent) { // charContent is a single character
-    if (!_streamStates.containsKey(streamId) || _originalMessages[streamId] == null) {
-      // Stream might have been completed or errored out
+  void _addSingleCharacterOrSmallChunk(String streamId, String charContent) {
+    if (!_streamStates.containsKey(streamId) ||
+        _originalMessages[streamId] == null) {
       return;
     }
-
-    // --- MODIFIED PART ---
-    // For true character-by-character, append exactly what is received.
-    // The AI is responsible for sending correct newlines for formatting.
-    // The previous complex newline processing is removed.
-    _accumulatedTexts[streamId] = (_accumulatedTexts[streamId] ?? '') + charContent;
-    // --- END OF MODIFIED PART ---
-
-    _streamStates[streamId] = StreamStateStreaming(_accumulatedTexts[streamId]!);
+    // 规范化换行符：将多个连续换行符替换为单个换行符
+    String processedContent = charContent.replaceAll(RegExp(r'\n{2,}'), '\n');
+    _accumulatedTexts[streamId] =
+        (_accumulatedTexts[streamId] ?? '') + processedContent;
+    _streamStates[streamId] =
+        StreamStateStreaming(_accumulatedTexts[streamId]!);
     notifyListeners();
   }
-
 
   // Modify addChunk to be async and process character by character
   Future<void> addChunk(String streamId, String chunk) async {
     // Check if stream is still valid at the beginning of processing a network chunk
-    if (!_streamStates.containsKey(streamId) || _originalMessages[streamId] == null) {
-      debugPrint('AIChatStreamManager: addChunk called for non-existent or completed stream $streamId');
+    if (!_streamStates.containsKey(streamId) ||
+        _originalMessages[streamId] == null) {
+      debugPrint(
+          'AIChatStreamManager: addChunk called for non-existent or completed stream $streamId');
       return;
     }
 
@@ -70,8 +72,10 @@ class AIChatStreamManager extends ChangeNotifier {
       // Crucially, check *inside* the loop too, as the stream might be
       // completed or errored by another part of the application,
       // or even by a quick user action.
-      if (!_streamStates.containsKey(streamId) || _originalMessages[streamId] == null) {
-        debugPrint('AIChatStreamManager: Stream $streamId was cleaned up mid-chunk processing.');
+      if (!_streamStates.containsKey(streamId) ||
+          _originalMessages[streamId] == null) {
+        debugPrint(
+            'AIChatStreamManager: Stream $streamId was cleaned up mid-chunk processing.');
         return; // Stop processing characters for this chunk
       }
 
@@ -86,7 +90,8 @@ class AIChatStreamManager extends ChangeNotifier {
   Future<void> completeStream(String streamId) async {
     // A short delay to ensure the last character has "typed out"
     // and UI has a chance to render before finalizing.
-    await Future.delayed(_kCharacterTypingDelay * 2); // e.g., twice the char delay
+    await Future.delayed(
+        _kCharacterTypingDelay * 2); // e.g., twice the char delay
 
     final finalText = _accumulatedTexts[streamId];
     final originalMessage = _originalMessages[streamId];
@@ -101,11 +106,12 @@ class AIChatStreamManager extends ChangeNotifier {
     // Check if the stream was already cleaned up (e.g. by an error)
     // This can happen if an error occurs and errorStream is called, cleaning up,
     // then completeStream is called from a finally block.
-    if (!_streamStates.containsKey(streamId) && !_originalMessages.containsKey(streamId)) {
-      debugPrint('AIChatStreamManager: Stream $streamId was already cleaned up before completion logic.');
+    if (!_streamStates.containsKey(streamId) &&
+        !_originalMessages.containsKey(streamId)) {
+      debugPrint(
+          'AIChatStreamManager: Stream $streamId was already cleaned up before completion logic.');
       return;
     }
-
 
     final finalTextMessage = TextMessage(
       id: originalMessage.id,
@@ -125,7 +131,8 @@ class AIChatStreamManager extends ChangeNotifier {
 
     try {
       // Ensure _chatController can handle TextStreamMessage -> TextMessage update
-      await _chatController.updateMessage(finalTextMessage, finalTextMessage); // Update with the final TextMessage
+      await _chatController.updateMessage(finalTextMessage,
+          finalTextMessage); // Update with the final TextMessage
     } catch (e) {
       debugPrint(
           'AIChatStreamManager: Failed to update message $streamId to final TextMessage: $e');
@@ -159,7 +166,8 @@ class AIChatStreamManager extends ChangeNotifier {
     );
 
     try {
-      await _chatController.updateMessage(errorTextMessage, errorTextMessage); // Update with error TextMessage
+      await _chatController.updateMessage(
+          errorTextMessage, errorTextMessage); // Update with error TextMessage
     } catch (e) {
       debugPrint(
           'AIChatStreamManager: Failed to update message $streamId to error TextMessage: $e');
