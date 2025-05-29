@@ -380,22 +380,22 @@ class AIChatPageState extends State<AIChatPage>
       padding: EdgeInsets.only(left: 4.0, right: 8.0, top: 0),
       child: Container(
         height: 28,
-        padding: EdgeInsets.all(4),
+        padding: EdgeInsets.all(1),
         width: 28,
         child: aiIcon_,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: (speaking
-                ? BaseColorUtils.colorYellow
-                : BaseColorUtils.colorAccent).withValues(alpha: .5),
-            width: .1,
-          ),
-          color: (speaking
-                  ? BaseColorUtils.colorYellow
-                  : BaseColorUtils.colorAccent)
-              .withValues(alpha: .05),
-        ),
+        // decoration: BoxDecoration(
+        //   shape: BoxShape.circle,
+        //   border: Border.all(
+        //     color: (speaking
+        //         ? BaseColorUtils.colorYellow
+        //         : BaseColorUtils.colorAccent).withValues(alpha: .5),
+        //     width: .1,
+        //   ),
+        //   color: (speaking
+        //           ? BaseColorUtils.colorYellow
+        //           : BaseColorUtils.colorAccent)
+        //       .withValues(alpha: .05),
+        // ),
       ),
     );
   }
