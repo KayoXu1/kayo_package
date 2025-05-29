@@ -46,8 +46,9 @@ abstract class ChatLocalizations {
 
   get userLoginExit;
 
+  get aiIconSpeaking;
+
+  get aiIcon;
 
   void logout();
-
-
 }

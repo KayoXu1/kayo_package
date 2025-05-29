@@ -134,8 +134,7 @@ class AIChatPageState extends State<AIChatPage> {
             final confirm = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
-                title:
-                Text(widget.localizations?.deleteSessionTitle ?? '删除会话'),
+                title: Text(widget.localizations?.deleteSessionTitle ?? '删除会话'),
                 content: Text(
                     widget.localizations?.deleteSessionConfirm ?? '确定要删除此会话吗？'),
                 actions: [
@@ -285,45 +284,66 @@ class AIChatPageState extends State<AIChatPage> {
             },
             imageMessageBuilder: (context, message, index) =>
                 FlyerChatImageMessage(
-                  message: message,
-                  index: index,
-                  showTime: false,
-                  showStatus: false,
-                ),
-            textMessageBuilder: (context, message, index) =>
-                FlyerChatTextMessage(
-                  message: message,
-                  index: index,
-                  showTime: false,
-                  showStatus: false,
-                  receivedBackgroundColor: Colors.transparent,
-                  padding: message.authorId == _agent.id
-                      ? EdgeInsets.zero
-                      : const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                ),
-            textStreamMessageBuilder: (context, message, index) {
-              final streamState =
-              context.watch<AIChatStreamManager>().getState(message.streamId);
-              return FlyerChatTextStreamMessage(
+              message: message,
+              index: index,
+              showTime: false,
+              showStatus: false,
+            ),
+            textMessageBuilder: (context, message, index) {
+              final isAgent = message.authorId == _agent.id;
+              final textMessage = FlyerChatTextMessage(
                 message: message,
                 index: index,
-                streamState: streamState,
-                chunkAnimationDuration: _kChunkAnimationDuration,
                 showTime: false,
                 showStatus: false,
                 receivedBackgroundColor: Colors.transparent,
-                padding: message.authorId == _agent.id
-                    ? const EdgeInsets.symmetric(
-                  horizontal: 1,
-                  vertical: 1,
-                )
+                padding: isAgent
+                    ? EdgeInsets.zero
                     : const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+              );
+
+              if (isAgent) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    aiIcon(false),
+                    Expanded(child: textMessage),
+                  ],
+                );
+              } else {
+                return textMessage;
+              }
+            },
+            textStreamMessageBuilder: (context, message, index) {
+              final streamState = context
+                  .watch<AIChatStreamManager>()
+                  .getState(message.streamId);
+              final isFromAI = message.authorId == _agent.id;
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isFromAI) aiIcon(true),
+                  Flexible(
+                    child: FlyerChatTextStreamMessage(
+                      message: message,
+                      index: index,
+                      streamState: streamState,
+                      chunkAnimationDuration: _kChunkAnimationDuration,
+                      showTime: false,
+                      showStatus: false,
+                      receivedBackgroundColor: Colors.transparent,
+                      padding: isFromAI
+                          ? const EdgeInsets.symmetric(
+                              horizontal: 1, vertical: 1)
+                          : const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                    ),
+                  ),
+                ],
               );
             },
           ),
@@ -342,6 +362,23 @@ class AIChatPageState extends State<AIChatPage> {
     );
   }
 
+  Padding aiIcon(bool speaking) {
+    return Padding(
+      padding: EdgeInsets.only(left: 4.0, right: 8.0, top: 0),
+      child: widget.localizations?.aiIcon != null
+          ? ImageView(
+              height: 20,
+              width: 20,
+              src: speaking
+                  ? (widget.localizations?.aiIconSpeaking ??
+                      widget.localizations?.aiIcon)
+                  : widget.localizations!.aiIcon,
+            )
+          : Icon(Icons.smart_toy,
+              size: 20, color: speaking ? Colors.blue : Colors.blueGrey),
+    );
+  }
+
   void _handleMessageSend(String text) async {
     BaseSysUtils.hideKeyboard(context);
     final message = TextMessage(
@@ -355,7 +392,7 @@ class AIChatPageState extends State<AIChatPage> {
       await _chatController.insertMessage(message);
       if (_chatController.messages.length == 1) {
         final sessionsBox =
-        await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
+            await Hive.openBox('${AIChatUtils.currentApiKey}_sessions');
         await sessionsBox.put(_chatController.currentSessionId, {
           'id': _chatController.currentSessionId,
           'title': text.length > 20 ? '${text.substring(0, 20)}...' : text,
@@ -367,8 +404,7 @@ class AIChatPageState extends State<AIChatPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-          Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $e'),
+          content: Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $e'),
         ),
       );
     }
@@ -401,7 +437,8 @@ class AIChatPageState extends State<AIChatPage> {
 
       final response = chatService.sendMessageStream(
         query: content,
-        conversationId: _chatController.lastConversationId, // Use controller's lastConversationId
+        conversationId: _chatController.lastConversationId,
+        // Use controller's lastConversationId
         onConversationId: (d) {
           _chatController.lastConversationId = d; // Update lastConversationId
           if (_chatController.currentSessionId != null) {
@@ -464,7 +501,7 @@ class AIChatPageState extends State<AIChatPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
-          Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $error'),
+              Text('${widget.localizations?.sendFailed ?? '发送消息失败'}: $error'),
         ),
       );
     } finally {
