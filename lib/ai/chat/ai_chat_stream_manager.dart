@@ -22,12 +22,12 @@ class AIChatStreamManager extends ChangeNotifier {
 
   // Define the delay for each character to appear
   static const Duration _kCharacterTypingDelay =
-      Duration(milliseconds: 30); // Adjust for typing speed (e.g., 30-80ms)
+  Duration(milliseconds: 30); // Adjust for typing speed (e.g., 30-80ms)
 
   AIChatStreamManager({
     required ChatController chatController,
     required Duration
-        chunkAnimationDuration, // This is passed to FlyerChatTextStreamMessage
+    chunkAnimationDuration, // This is passed to FlyerChatTextStreamMessage
   }) : _chatController = chatController;
 
   // _chunkAnimationDuration = chunkAnimationDuration;
@@ -49,40 +49,38 @@ class AIChatStreamManager extends ChangeNotifier {
         _originalMessages[streamId] == null) {
       return;
     }
-    // 规范化换行符：将多个连续换行符替换为单个换行符
-    String processedContent = charContent.replaceAll(RegExp(r'\n{2,}'), '\n');
-    _accumulatedTexts[streamId] =
-        (_accumulatedTexts[streamId] ?? '') + processedContent;
-    _streamStates[streamId] =
-        StreamStateStreaming(_accumulatedTexts[streamId]!);
+
+    final current = (_accumulatedTexts[streamId] ?? '') + charContent;
+
+    final normalized = current.replaceAll(RegExp(r'\n{2,}'), '\n');
+
+    _accumulatedTexts[streamId] = normalized;
+    _streamStates[streamId] = StreamStateStreaming(normalized);
+
     notifyListeners();
   }
 
   // Modify addChunk to be async and process character by character
   Future<void> addChunk(String streamId, String chunk) async {
-    // Check if stream is still valid at the beginning of processing a network chunk
     if (!_streamStates.containsKey(streamId) ||
         _originalMessages[streamId] == null) {
-      debugPrint(
-          'AIChatStreamManager: addChunk called for non-existent or completed stream $streamId');
+      debugPrint('AIChatStreamManager: addChunk called for non-existent or completed stream $streamId');
       return;
     }
 
-    for (int i = 0; i < chunk.length; i++) {
-      // Crucially, check *inside* the loop too, as the stream might be
-      // completed or errored by another part of the application,
-      // or even by a quick user action.
+
+    String cleanedChunk = chunk.replaceAll(RegExp(r'\n{2,}'), '\n');
+
+    for (int i = 0; i < cleanedChunk.length; i++) {
       if (!_streamStates.containsKey(streamId) ||
           _originalMessages[streamId] == null) {
-        debugPrint(
-            'AIChatStreamManager: Stream $streamId was cleaned up mid-chunk processing.');
-        return; // Stop processing characters for this chunk
+        debugPrint('AIChatStreamManager: Stream $streamId was cleaned up mid-chunk processing.');
+        return;
       }
 
-      final char = chunk[i];
+      final char = cleanedChunk[i];
       _addSingleCharacterOrSmallChunk(streamId, char);
 
-      // Wait for the character typing delay
       await Future.delayed(_kCharacterTypingDelay);
     }
   }
@@ -93,7 +91,8 @@ class AIChatStreamManager extends ChangeNotifier {
     await Future.delayed(
         _kCharacterTypingDelay * 2); // e.g., twice the char delay
 
-    final finalText = _accumulatedTexts[streamId];
+    final rawFinalText = _accumulatedTexts[streamId];
+    final finalText = rawFinalText; //?.replaceAll(RegExp(r'\n{2,}'), '\n');
     final originalMessage = _originalMessages[streamId];
 
     if (finalText == null || originalMessage == null) {
@@ -147,7 +146,8 @@ class AIChatStreamManager extends ChangeNotifier {
     // await Future.delayed(_kCharacterTypingDelay);
 
     final originalMessage = _originalMessages[streamId];
-    final currentText = _accumulatedTexts[streamId] ?? '';
+    final rawText = _accumulatedTexts[streamId] ?? '';
+    final currentText = rawText; //.replaceAll(RegExp(r'\n{2,}'), '\n');
 
     if (originalMessage == null) {
       debugPrint(

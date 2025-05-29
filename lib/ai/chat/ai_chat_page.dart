@@ -41,7 +41,8 @@ class AIChatPage extends StatefulWidget {
   AIChatPageState createState() => AIChatPageState();
 }
 
-class AIChatPageState extends State<AIChatPage> {
+class AIChatPageState extends State<AIChatPage>
+    with SingleTickerProviderStateMixin {
   final _uuid = const Uuid();
   final _crossCache = CrossCache();
   final _scrollController = ScrollController();
@@ -299,10 +300,10 @@ class AIChatPageState extends State<AIChatPage> {
                 showStatus: false,
                 receivedBackgroundColor: Colors.transparent,
                 padding: isAgent
-                    ? EdgeInsets.zero
+                    ? EdgeInsets.only(top: 5)
                     : const EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 10,
+                        vertical: 8,
                       ),
               );
               if (isAgent) {
@@ -337,8 +338,7 @@ class AIChatPageState extends State<AIChatPage> {
                       showStatus: false,
                       receivedBackgroundColor: Colors.transparent,
                       padding: isFromAI
-                          ? const EdgeInsets.symmetric(
-                              horizontal: 1, vertical: 1)
+                          ? const EdgeInsets.only(top: 5)
                           : const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 10),
                     ),
@@ -363,19 +363,38 @@ class AIChatPageState extends State<AIChatPage> {
   }
 
   Padding aiIcon(bool speaking) {
+    var aiIcon_ = widget.localizations?.aiIcon != null
+        ? ImageView(
+            height: 18,
+            width: 18,
+            src: speaking
+                ? (widget.localizations?.aiIconSpeaking ??
+                    widget.localizations?.aiIcon)
+                : widget.localizations!.aiIcon,
+          )
+        : Icon(Icons.smart_toy,
+            size: 18, color: speaking ? Colors.blue : Colors.blueGrey);
     return Padding(
       padding: EdgeInsets.only(left: 4.0, right: 8.0, top: 0),
-      child: widget.localizations?.aiIcon != null
-          ? ImageView(
-              height: 20,
-              width: 20,
-              src: speaking
-                  ? (widget.localizations?.aiIconSpeaking ??
-                      widget.localizations?.aiIcon)
-                  : widget.localizations!.aiIcon,
-            )
-          : Icon(Icons.smart_toy,
-              size: 20, color: speaking ? Colors.blue : Colors.blueGrey),
+      child: Container(
+        height: 28,
+        padding: EdgeInsets.all(4),
+        width: 28,
+        child: aiIcon_,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: (speaking
+                ? BaseColorUtils.colorYellow
+                : BaseColorUtils.colorAccent).withValues(alpha: .5),
+            width: .1,
+          ),
+          color: (speaking
+                  ? BaseColorUtils.colorYellow
+                  : BaseColorUtils.colorAccent)
+              .withValues(alpha: .05),
+        ),
+      ),
     );
   }
 
