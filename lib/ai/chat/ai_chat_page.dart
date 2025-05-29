@@ -299,10 +299,11 @@ class AIChatPageState extends State<AIChatPage>
                 showTime: false,
                 showStatus: false,
                 receivedBackgroundColor: Colors.transparent,
+                sentBackgroundColor: BaseColorUtils.colorAccent.withValues(alpha: .9),
                 padding: isAgent
                     ? EdgeInsets.only(top: 5)
                     : const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 14,
                         vertical: 8,
                       ),
               );
@@ -337,10 +338,11 @@ class AIChatPageState extends State<AIChatPage>
                       showTime: false,
                       showStatus: false,
                       receivedBackgroundColor: Colors.transparent,
+                      sentBackgroundColor: BaseColorUtils.colorAccent.withValues(alpha: .9),
                       padding: isFromAI
                           ? const EdgeInsets.only(top: 5)
                           : const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                              horizontal: 14, vertical: 8),
                     ),
                   ),
                 ],
