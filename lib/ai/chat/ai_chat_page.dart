@@ -196,6 +196,14 @@ class AIChatPageState extends State<AIChatPage>
     return Scaffold(
       appBar: AppBar(
         elevation: 0.5,
+        leading: widget.localizations != null
+            ? IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              )
+            : null,
         title: Text(widget.title),
         centerTitle: true,
         actions: [
@@ -233,22 +241,23 @@ class AIChatPageState extends State<AIChatPage>
               ),
             ),
             const Divider(),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: Text(widget.localizations?.mine ?? '我的'),
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MyProfilePage(
-                      userId: widget.userId,
-                      localizations: widget.localizations,
+            if (widget.localizations != null)
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: Text(widget.localizations?.mine ?? '我的'),
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MyProfilePage(
+                        userId: widget.userId,
+                        localizations: widget.localizations,
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
           ],
         ),
       ),
@@ -299,7 +308,8 @@ class AIChatPageState extends State<AIChatPage>
                 showTime: false,
                 showStatus: false,
                 receivedBackgroundColor: Colors.transparent,
-                sentBackgroundColor: BaseColorUtils.colorAccent.withValues(alpha: .9),
+                sentBackgroundColor:
+                    BaseColorUtils.colorAccent.withValues(alpha: .9),
                 padding: isAgent
                     ? EdgeInsets.only(top: 5)
                     : const EdgeInsets.symmetric(
@@ -338,7 +348,8 @@ class AIChatPageState extends State<AIChatPage>
                       showTime: false,
                       showStatus: false,
                       receivedBackgroundColor: Colors.transparent,
-                      sentBackgroundColor: BaseColorUtils.colorAccent.withValues(alpha: .9),
+                      sentBackgroundColor:
+                          BaseColorUtils.colorAccent.withValues(alpha: .9),
                       padding: isFromAI
                           ? const EdgeInsets.only(top: 5)
                           : const EdgeInsets.symmetric(
