@@ -196,7 +196,7 @@ class AIChatPageState extends State<AIChatPage>
     return Scaffold(
       appBar: AppBar(
         elevation: 0.5,
-        leading: widget.localizations != null
+        leading: widget.localizations == null
             ? IconButton(
                 icon: Icon(Icons.arrow_back),
                 onPressed: () {
