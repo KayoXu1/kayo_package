@@ -199,7 +199,7 @@ class AIChatPageState extends State<AIChatPage>
         title: Text(widget.title),
         centerTitle: true,
         actions: [
-          if (widget.localizations == null)
+          if (widget.localizations?.showCloseButton == true)
             IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
@@ -240,7 +240,7 @@ class AIChatPageState extends State<AIChatPage>
               ),
             ),
             const Divider(),
-            if (widget.localizations != null)
+            if (widget.localizations?.showUserProfile == true)
               ListTile(
                 leading: const Icon(Icons.person),
                 title: Text(widget.localizations?.mine ?? '我的'),
