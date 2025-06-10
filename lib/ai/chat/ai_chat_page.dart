@@ -196,22 +196,21 @@ class AIChatPageState extends State<AIChatPage>
     return Scaffold(
       appBar: AppBar(
         elevation: 0.5,
-        leading: widget.localizations == null
-            ? IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              )
-            : null,
         title: Text(widget.title),
         centerTitle: true,
         actions: [
+          if (widget.localizations == null)
+            IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             tooltip: widget.localizations?.newChat ?? '新聊天',
             onPressed: _startNewChat,
-          ),
+          )
         ],
       ),
       drawer: Drawer(
