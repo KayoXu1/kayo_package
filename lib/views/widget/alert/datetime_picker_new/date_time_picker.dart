@@ -149,13 +149,29 @@ class DateTimePicker {
                               startDateTime.minute,
                               0);
 
+                          // 根据dateFormat判断需要设置的时间单位
+                          int hour = endDateTime.hour;
+                          int minute = endDateTime.minute;
+                          int second = 59;
+
+                          // 如果dateFormat不包含小时格式，则设为23
+                          if (!dateFormat!.contains('H') &&
+                              !dateFormat.contains('h')) {
+                            hour = 23;
+                          }
+
+                          // 如果dateFormat不包含分钟格式，则设为59
+                          if (!dateFormat.contains('m')) {
+                            minute = 59;
+                          }
+
                           endDateTime = DateTime(
                               endDateTime.year,
                               endDateTime.month,
                               endDateTime.day,
-                              endDateTime.hour,
-                              endDateTime.minute,
-                              59);
+                              hour,
+                              minute,
+                              second);
                           onDateTimePick?.call(startDateTime, endDateTime);
                         }),
                   ],
