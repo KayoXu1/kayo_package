@@ -1,7 +1,7 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'dart:collection';
-import 'package:connectivity/connectivity.dart';
 import 'package:kayo_package/http/bean/base_result_data.dart';
 
 import 'package:kayo_package/kayo_package.dart';
@@ -104,6 +104,9 @@ abstract class BaseHttpManager {
         CancelToken? cancelToken,
         ProgressCallback? onSendProgress,
         ProgressCallback? onReceiveProgress}) async {
+    if (!url.contains('http')) {
+      return;
+    }
     if (autoShowDialog) LoadingUtils.show(data: textLoading());
 
     var paramsTemp = Map<String, dynamic>.from(params ?? {});
@@ -302,9 +305,13 @@ abstract class BaseHttpManager {
     if (!BaseSysUtils.empty(contentType)) {
       option.headers?['Content-Type	'] = contentType;
     }
+    if (PlatformUtils.isWeb) {
+      option.headers?['Access-Control-Allow-Origin'] = '*';
+    }
 
     ///超时
-    // option.connectTimeout = 1000 * 60;
+    // option.sendTimeout = Duration(seconds: 60 * 5);
+    // option.receiveTimeout = Duration(seconds: 60 * 12);
 
     Response? response;
     var errorHeader = '';
@@ -341,7 +348,8 @@ abstract class BaseHttpManager {
         logInfo(tag: tag, msg: '请求异常请求头: ' + option.headers.toString());
         logInfo(
             tag: tag,
-            msg: '请求异常参数: ' + /* params is Map ? toJson(params) :*/ '$params');
+            msg: '请求异常参数: ' + /* params is Map ? toJson(params) :*/
+                '$params');
 
         logInfo(
             tag: tag,
@@ -352,11 +360,11 @@ abstract class BaseHttpManager {
       if (errorResponse?.statusCode == KayoPackage.share.reLoginCode) {
         var msg = textLoginExpired();
         _onError(onError, msg);
-        return BaseResultData(msg, 6).sendMsg();
+        return BaseResultData(msg, BaseCode.RESULT_ERROR_SIGN_ERROR).sendMsg();
       }
 
-      String msg = (BaseSysUtils.isDebug ? errorHeader : '') +
-          (e.message ?? '');
+      String msg =
+          (BaseSysUtils.isDebug ? errorHeader : '') + (e.message ?? '');
       var code = errorResponse?.statusCode ?? BaseCode.RESULT_ERROR_OTHER_ERROR;
       Map<String, dynamic>? map = Map<String, dynamic>();
       try {
@@ -371,6 +379,9 @@ abstract class BaseHttpManager {
       } else if (map?.containsKey('message') == true &&
           map?['message'] is String) {
         msg = map?['message'] ?? msg;
+      } else if (map?.containsKey('msg') == true &&
+          map?['msg'] is String) {
+        msg = map?['msg'] ?? msg;
       }
       if (map?.containsKey('code') == true) {
         code = map?['code'] ?? code;
@@ -405,7 +416,9 @@ abstract class BaseHttpManager {
 
       var jsonMap = Map<String, dynamic>();
 
-      if (jsonStr is List &&
+      if (jsonStr == null) {
+        jsonMap = {'code': 200, 'data': ''};
+      } else if (jsonStr is List &&
           !(jsonStr.toString().contains('code') &&
               jsonStr.toString().contains('message'))) {
         jsonMap = {'code': 200, 'data': jsonStr};
