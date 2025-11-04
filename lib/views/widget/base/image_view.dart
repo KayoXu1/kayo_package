@@ -139,28 +139,47 @@ class ImageViewState extends State<ImageView> {
       if (null != widget.url && widget.url != '' && widget.url!.length > 10) {
         if (widget.useCache == true) {
           image = CachedNetworkImage(
-            placeholder: (context, str) {
-              return Image.asset(widget.defaultImage ??
-                  'packages/kayo_package/assets/ic_no_data.png');
-            },
-            cacheManager: KayoPackage.share.ignoreSSL == true
-                ? EsoImageCacheManager()
-                : null,
-            imageUrl: widget.url!,
-            width: widget.width,
-            height: widget.height,
-            color: widget.color,
-            fit: widget.fit,
-          );
+              placeholder: (context, str) {
+                return Image.asset(widget.defaultImage ??
+                    'packages/kayo_package/assets/ic_no_data.png');
+              },
+              cacheManager: KayoPackage.share.ignoreSSL == true
+                  ? EsoImageCacheManager()
+                  : null,
+              imageUrl: widget.url!,
+              width: widget.width,
+              height: widget.height,
+              color: widget.color,
+              fit: widget.fit,
+              errorWidget: (
+                BuildContext context,
+                String url,
+                Object error,
+              ) {
+                return Image.asset(
+                    widget.defaultImage ??
+                        'packages/kayo_package/assets/ic_no_data.png',
+                    height: widget.height,
+                    width: widget.width,
+                    fit: widget.fit);
+              });
         } else {
           image = FadeInImage.assetNetwork(
-            placeholder: widget.defaultImage ??
-                'packages/kayo_package/assets/ic_no_data.png',
-            image: widget.url ?? '',
-            width: widget.width,
-            height: widget.height,
-            fit: widget.fit,
-          );
+              placeholder: widget.defaultImage ??
+                  'packages/kayo_package/assets/ic_no_data.png',
+              image: widget.url ?? '',
+              width: widget.width,
+              height: widget.height,
+              fit: widget.fit,
+              imageErrorBuilder:
+                  (BuildContext context, Object error, StackTrace? stackTrace) {
+                return Image.asset(
+                    widget.defaultImage ??
+                        'packages/kayo_package/assets/ic_no_data.png',
+                    height: widget.height,
+                    width: widget.width,
+                    fit: widget.fit);
+              });
         }
       } else if ((widget.src ?? '') != '') {
 //      if (widget.src.endsWith('.svg')) {
